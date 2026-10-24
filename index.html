@@ -88,13 +88,7 @@ button:disabled{cursor:not-allowed;opacity:.35}
 .album-card{background:#fff;border:1px solid #f0f0f0;border-radius:12px;box-shadow:0 6px 15px #00000008;padding:12px 12px 13px;min-width:0;position:relative;transition:transform .19s,box-shadow .19s}
 .album-card:hover{transform:translateY(-9px);box-shadow:0 16px 29px #00000012}
 .album-art-btn{width:100%;border:0;background:transparent;padding:0;display:block;text-align:left}
-.album-cover{display:block;width:100%;height:100%;object-fit:fill;border:0}
-/* Imported images get a cassette-case wrapper so they match the demo cases. */
-.album-cover-frame{width:100%;max-width:306px;margin:0 auto;aspect-ratio:1.21;position:relative;overflow:hidden;background:#e8eaec;border:1px solid #d2d5d9;box-shadow:0 1px 3px #00000018}
-.album-cover-frame.custom-cover{border:3px solid #c7cbce;background:#202329;box-shadow:inset 0 0 0 2px #f6f6f7,0 2px 5px #00000021}
-.album-cover-frame.custom-cover .album-cover{position:absolute;left:10%;top:3%;width:88%;height:94%;object-fit:cover;object-position:center;border:1px solid #b6bbc1}
-.album-cover-frame.custom-cover::before{content:"";position:absolute;left:0;top:0;bottom:0;width:10%;z-index:2;background:linear-gradient(90deg,#272b30,#101317 35%,#60656b 58%,#16191d 83%,#45494f);border-right:1px solid #767b81;box-shadow:inset 1px 0 0 #f3f4f575}
-.album-cover-frame.custom-cover::after{content:"";position:absolute;inset:0;z-index:3;pointer-events:none;border:1px solid #f4f4f68f;box-shadow:inset 0 3px 0 #f2f3f54f,inset 0 -3px 0 #d2d5d65c;background:linear-gradient(120deg,#ffffff30,transparent 20% 83%,#ffffff13)}
+.album-cover{display:block;width:100%;max-width:306px;margin:0 auto;height:auto;aspect-ratio:1.21;object-fit:fill;box-shadow:0 1px 3px #00000018;border:1px solid #dadde0}
 .album-meta{display:flex;align-items:center;gap:6px;justify-content:space-between;margin-top:11px}
 .album-text{min-width:0}.album-text strong{font-size:clamp(12px,1.16vw,17px);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
 .album-text small{display:block;font-size:11px;letter-spacing:.26em;color:#9699a0;margin-top:6px}
@@ -291,8 +285,7 @@ button:disabled{cursor:not-allowed;opacity:.35}
     shown.forEach(track=>{
       const card=document.createElement('article');card.className='album-card';
       const select=document.createElement('button');select.className='album-art-btn';select.type='button';select.title='Add '+track.title+' to queue';select.setAttribute('aria-label','Add '+track.title+' to queue');
-      const coverFrame=document.createElement('span');coverFrame.className='album-cover-frame'+(track.customCover?' custom-cover':'');
-    const cover=document.createElement('img');cover.className='album-cover';cover.src=track.cover;cover.alt=track.title+' album artwork';coverFrame.append(cover);select.append(coverFrame);
+      const cover=document.createElement('img');cover.className='album-cover';cover.src=track.cover;cover.alt=track.title+' album artwork';select.append(cover);
       select.onclick=()=>{queue.push(track.id);renderQueue();toast(track.title+' added to queue');emit('queue-change',{ids:[...queue]})};
       const info=document.createElement('div');info.className='album-meta';
       const texts=document.createElement('div');texts.className='album-text';const title=document.createElement('strong');title.textContent=track.title;const caption=document.createElement('small');caption.textContent='TAPE';texts.append(title,caption);
@@ -315,31 +308,11 @@ button:disabled{cursor:not-allowed;opacity:.35}
   $('gridView').onclick=()=>{$('libraryGrid').classList.remove('list-mode');$('gridView').classList.add('active');$('listView').classList.remove('active')};
   $('listView').onclick=()=>{$('libraryGrid').classList.add('list-mode');$('listView').classList.add('active');$('gridView').classList.remove('active')};
   function refreshDeck(){const track=item(activeId);$('tapeLabel').textContent=track?track.title:'Mix Tape';$('ejectedVisual').hidden=!!track;$('playerWindow').classList.toggle('is-playing',playing);$('playbackStatus').innerHTML='';const strong=document.createElement('strong');strong.textContent=track?track.title:'Empty deck';$('playbackStatus').append(strong,document.createTextNode(playing?' · playing':' · '+(track?.source?'ready':'visual demo · import an audio file to play')));renderQueue()}
-  function loadTrack(id){
-    const track=item(id);if(!track)return;
-    // Loading the already-selected cassette must not reset a paused track to 0:00.
-    if(id===activeId && (!track.source || audio.getAttribute('src')===track.source)){
-      refreshDeck();emit('load',{track,resumed:true});toast(track.title+' is already in the player');return;
-    }
-    stop();activeId=id;
-    if(track.source){audio.src=track.source;audio.load()}
-    else{audio.removeAttribute('src');audio.load()}
-    refreshDeck();emit('load',{track});toast(track.title+' loaded into player');
-  }
-  async function play(){
-    const track=item(activeId);
-    if(!track){toast('Load a cassette from the queue first');return}
-    if(!track.source){toast('This is demo artwork. Import an audio file to hear playback.');emit('play',{track,hasAudio:false});return}
-    try{
-      // Setting src or calling load() on every Play discards the current position.
-      // Keep the loaded media element intact when resuming from Pause.
-      if(audio.getAttribute('src')!==track.source){audio.src=track.source;audio.load()}
-      await audio.play();playing=true;refreshDeck();emit('play',{track,hasAudio:true});
-    }catch{toast('Could not play this audio file. Try another format.')}
-  }
+  function loadTrack(id){stop();activeId=id;const track=item(id);if(track?.source){audio.src=track.source;audio.load()}else audio.removeAttribute('src');refreshDeck();emit('load',{track});toast(track?.title+' loaded into player')}
+  async function play(){const track=item(activeId);if(!track){toast('Load a cassette from the queue first');return}if(!track.source){toast('This is demo artwork. Import an audio file to hear playback.');emit('play',{track,hasAudio:false});return}try{await audio.play();playing=true;refreshDeck();emit('play',{track,hasAudio:true})}catch{toast('Could not play this audio file. Try another format.')}}
   function pause(){audio.pause();playing=false;refreshDeck();emit('pause',{track:item(activeId)})}
   function stop(){audio.pause();if(Number.isFinite(audio.duration)&&audio.duration>0)audio.currentTime=0;playing=false;refreshDeck();emit('stop',{})}
-  $('playButton').onclick=()=>audio.paused?play():pause();$('stopButton').onclick=()=>{stop();toast('Stopped')};
+  $('playButton').onclick=()=>playing?pause():play();$('stopButton').onclick=()=>{stop();toast('Stopped')};
   $('rewButton').onclick=()=>{if(audio.src)audio.currentTime=Math.max(0,audio.currentTime-10);toast('Rewind ◀◀');emit('rewind',{seconds:10})};
   $('forwardButton').onclick=()=>{if(audio.src&&Number.isFinite(audio.duration))audio.currentTime=Math.min(audio.duration,audio.currentTime+10);toast('Fast forward ▶▶');emit('forward',{seconds:10})};
   $('ejectButton').onclick=()=>{stop();activeId=null;audio.removeAttribute('src');audio.load();refreshDeck();toast('Tape ejected');emit('eject',{})};
@@ -369,7 +342,7 @@ button:disabled{cursor:not-allowed;opacity:.35}
     for(const row of rows){const f=row.querySelector('input[type=file]').files[0];const n=row.querySelector('input[type=text]').value.trim();if(f){if(!n){$('importError').textContent='Please give every selected audio file a song name.';return}entries.push({file:f,name:n})}}
     if(!entries.length){$('importError').textContent='Choose at least one audio file to import.';return}
     const img=coverUrl?URL.createObjectURL($('coverFile').files[0]):null;
-    const imported=entries.map(({file,name},i)=>({id:'user-'+Date.now()+'-'+i,title:name,artist:'My music',cover:img||'assets/images/case-06.webp',customCover:!!img,source:URL.createObjectURL(file),demo:false,created:Date.now()+i}));
+    const imported=entries.map(({file,name},i)=>({id:'user-'+Date.now()+'-'+i,title:name,artist:'My music',cover:img||'assets/images/case-06.webp',source:URL.createObjectURL(file),demo:false,created:Date.now()+i}));
     library.push(...imported);renderLibrary();closeModal();navigate(2);toast(imported.length+' track'+(imported.length===1?'':'s')+' added to Library');emit('library-import',{tracks:imported});
   };
   // Prevent browser storing dummy data: local uploads only last for this page session.
