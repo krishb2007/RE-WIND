@@ -3,90 +3,86 @@
 // Member 3: Music Library & Playlist Management
 // =====================================================
 
-// SAMPLE MUSIC DATA
-// Audio URLs can be added when the playback team
-// supplies playable tracks.
-
 const musicLibrary = [
   {
     id: 1,
-    title: "Blinding Lights",
-    artist: "The Weeknd",
-    album: "After Hours",
+    title: "North Lights",
+    artist: "North Lights",
+    album: "North Lights",
     genre: "Synth-pop",
-    duration: "3:20",
-    cover: "",
-    audioUrl: ""
+    duration: "",
+    cover: "./assets/images/cd1.png",
+    audioUrl: "./assets/audio/track1.mp3"
   },
   {
     id: 2,
-    title: "Get Lucky",
-    artist: "Daft Punk",
-    album: "Random Access Memories",
-    genre: "Disco",
-    duration: "4:08",
-    cover: "",
-    audioUrl: ""
+    title: "Petal Static",
+    artist: "Petal Static",
+    album: "Petal Static",
+    genre: "Dream pop",
+    duration: "",
+    cover: "./assets/images/cd2.png",
+    audioUrl: "./assets/audio/track2.mp3"
   },
   {
     id: 3,
-    title: "Take On Me",
-    artist: "a-ha",
-    album: "Hunting High and Low",
+    title: "Orbital Drift",
+    artist: "Orbital Drift",
+    album: "Orbital Drift",
     genre: "Synth-pop",
-    duration: "3:46",
-    cover: "",
-    audioUrl: ""
+    duration: "",
+    cover: "./assets/images/cd3.png",
+    audioUrl: "./assets/audio/track3.mp3"
   },
   {
     id: 4,
-    title: "Billie Jean",
-    artist: "Michael Jackson",
-    album: "Thriller",
-    genre: "Pop",
-    duration: "4:54",
-    cover: "",
-    audioUrl: ""
+    title: "Midnight Lanes",
+    artist: "Midnight Lanes",
+    album: "Midnight Lanes",
+    genre: "Indie pop",
+    duration: "",
+    cover: "./assets/images/cd4.png",
+    audioUrl: "./assets/audio/track4.mp3"
   },
   {
     id: 5,
-    title: "Digital Love",
-    artist: "Daft Punk",
-    album: "Discovery",
-    genre: "Electronic",
-    duration: "4:58",
-    cover: "",
-    audioUrl: ""
+    title: "Tides",
+    artist: "Tides",
+    album: "Tides",
+    genre: "Ambient",
+    duration: "",
+    cover: "./assets/images/cd5.png",
+    audioUrl: "./assets/audio/track5.mp3"
   },
   {
     id: 6,
-    title: "Stayin' Alive",
-    artist: "Bee Gees",
-    album: "Saturday Night Fever",
-    genre: "Disco",
-    duration: "4:45",
-    cover: "",
-    audioUrl: ""
+    title: "Fracture Plans",
+    artist: "Fracture Plans",
+    album: "Fracture Plans",
+    genre: "Electronic",
+    duration: "",
+    cover: "./assets/images/cd6.png",
+    audioUrl: "./assets/audio/track6.mp3"
   },
   {
     id: 7,
-    title: "Everybody Wants to Rule the World",
-    artist: "Tears for Fears",
-    album: "Songs from the Big Chair",
-    genre: "New Wave",
-    duration: "4:11",
-    cover: "",
-    audioUrl: ""
+    title: "Slow Rooms",
+    artist: "Slow Rooms",
+    album: "Slow Rooms",
+    genre: "Lo-fi",
+    duration: "",
+    cover: "./assets/images/cd7.png",
+    audioUrl: "./assets/audio/track7.mp3"
   },
   {
     id: 8,
-    title: "Sweet Dreams",
-    artist: "Eurythmics",
-    album: "Sweet Dreams",
+    title: "Vacant Frequencies",
+    artist: "Vacant Frequencies",
+    album: "Vacant Frequencies",
     genre: "Synth-pop",
-    duration: "3:36",
-    cover: "",
-    audioUrl: ""
+    duration: "",
+    cover: "./assets/images/cd8.png",
+    audioUrl: "./assets/audio/track8.mp3"
   }
 ];
 
@@ -359,12 +355,76 @@ function selectSong(songId) {
   return song;
 }
 
+const albums = musicLibrary.map(song => ({
+  id: song.id,
+  title: song.title,
+  artist: song.artist,
+  cover: song.cover,
+  audio: song.audioUrl
+}));
+
+function renderAlbums(container, query = "") {
+  if (!container) return 0;
+
+  const matches = albums.filter(album =>
+    `${album.title} ${album.artist}`.toLowerCase().includes(
+      String(query).toLowerCase().trim()
+    )
+  );
+
+  container.replaceChildren();
+
+  if (!matches.length) {
+    const empty = document.createElement("p");
+    empty.className = "empty-library";
+    empty.textContent = "No tapes match that search.";
+    container.append(empty);
+    return 0;
+  }
+
+  matches.forEach(album => {
+    const card = document.createElement("article");
+    card.className = "album";
+    const cover = document.createElement("img");
+    cover.src = album.cover;
+    cover.alt = `${album.title} album cover`;
+    cover.loading = "lazy";
+
+    const title = document.createElement("h2");
+    title.textContent = album.title;
+    const artist = document.createElement("p");
+    artist.textContent = album.artist;
+    const actions = document.createElement("div");
+    actions.className = "album-actions";
+
+    const load = document.createElement("button");
+    load.type = "button";
+    load.dataset.action = "load-tape";
+    load.dataset.albumId = String(album.id);
+    load.textContent = "Load tape";
+
+    const queue = document.createElement("button");
+    queue.type = "button";
+    queue.dataset.action = "queue-tape";
+    queue.dataset.albumId = String(album.id);
+    queue.textContent = "+ Queue";
+
+    actions.append(load, queue);
+    card.append(cover, title, artist, actions);
+    container.append(card);
+  });
+
+  return matches.length;
+}
+
 
 // =====================================================
 // EXPORT FUNCTIONS FOR OTHER TEAM MEMBERS
 // =====================================================
 
 window.REWINDLibrary = {
+  albums,
+  renderAlbums,
   getAllSongs,
   searchSongs,
   getSongsByAlbum,
