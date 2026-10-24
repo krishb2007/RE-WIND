@@ -1,85 +1,139 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#221e1a">
-<title>RE-WIND — Cassette Player</title>
-<style>
-:root{color-scheme:dark;--ink:#eee4d2;--muted:#ae9d86;--accent:#e69e5c;--panel:#27231f}
-*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% 0,#594337 0,transparent 65%),repeating-linear-gradient(92deg,#201a16 0,#201a16 3px,#241d18 4px,#241d18 9px);color:var(--ink);font:15px Arial,Helvetica,sans-serif}button,input,select{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:4px}button{color:inherit}header{max-width:1260px;margin:auto;padding:32px 28px;display:flex;justify-content:space-between;align-items:center;gap:24px}.brand{font-size:27px;font-weight:900;letter-spacing:.14em}.brand small{display:block;font:10px monospace;color:var(--muted);letter-spacing:.25em;margin-top:8px}nav{display:flex;background:#171512;border:1px solid #695747;border-radius:30px;padding:5px;gap:4px}nav button{border:0;border-radius:24px;background:transparent;padding:12px 22px;color:var(--muted)}nav button[aria-current=page]{background:#e9ddc6;color:#312820}main{max-width:1200px;margin:10px auto 50px;padding:0 24px}section[hidden]{display:none!important}.eyebrow{font:11px monospace;letter-spacing:.24em;color:var(--accent);text-transform:uppercase}h1{font-family:Georgia,serif;font-weight:normal;font-size:clamp(30px,4vw,48px);margin:12px 0 28px}h2{font-size:16px;font-weight:normal}.player-layout{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:24px;align-items:start}
-.deck{position:relative;padding:25px;border:9px solid #694430;border-radius:19px;background:repeating-linear-gradient(0deg,#373631 0,#373631 1px,#3d3b35 2px,#3d3b35 4px);box-shadow:0 25px 50px #0008,inset 0 0 0 2px #b8976b,inset 0 0 25px #0007}.deck:before,.deck:after{content:"+";position:absolute;top:10px;color:#161512;text-shadow:0 1px #8f8879;font:22px monospace}.deck:before{left:10px}.deck:after{right:10px}.deck-top{display:flex;justify-content:space-between;gap:12px;align-items:center;border-bottom:1px solid #171715;padding:0 0 18px;margin-bottom:20px}.deck-name{font-weight:900;letter-spacing:.14em;font-size:19px}.deck-name small{display:block;font:9px monospace;color:#b4ac9a;margin-top:6px;letter-spacing:.15em}.led{display:inline-block;width:7px;height:7px;border-radius:50%;background:#a0b985;box-shadow:0 0 8px #b4d68a;margin-right:7px}.deck-top span{font:10px monospace;color:#d5ccb7}
-.door{padding:22px 23px 27px;border:7px solid #171816;border-radius:10px;background:linear-gradient(145deg,#55564b,#242821);box-shadow:inset 0 0 25px #000c,0 2px 1px #9996;position:relative}.cassette{position:relative;padding:17px 18px 33px;border:2px solid #111;border-radius:13px;background:linear-gradient(135deg,#423d30,#1d211c);box-shadow:0 8px 15px #0009,inset 0 1px 2px #c8b88c66}.label{background:linear-gradient(#eee1bd 0 52%,#d9ad65 52% 60%,#bd663e 60% 68%,#693c30 68% 76%,#e6d6ad 76%);padding:12px 12px 24px;border-radius:7px;color:#302c24}.tape-heading{display:flex;gap:14px;align-items:center;font:11px monospace;border-bottom:1px solid #655841;padding-bottom:8px}.side{font-size:25px;font-weight:bold}.tape-title{font:italic 20px Georgia,serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}.window{margin:12px 0 0;background:linear-gradient(145deg,#171b18,#323a31);border:4px solid #302e26;border-radius:45px;display:flex;align-items:center;justify-content:space-around;padding:10px 12px;box-shadow:inset 0 4px 12px #000b}.reel{width:clamp(55px,8vw,100px);aspect-ratio:1;border:12px solid #493b2c;border-radius:50%;background:repeating-conic-gradient(#c8bf9d 0deg 43deg,#34382d 43deg 60deg);position:relative;box-shadow:0 0 0 2px #181c17;animation:spin 3s linear infinite;animation-play-state:paused}.reel:after{content:"";position:absolute;inset:31%;border-radius:50%;background:#191d17;border:3px solid #998f71}.playing .reel{animation-play-state:running}.tape-bridge{width:23%;height:31px;background:linear-gradient(#302a20,#806447,#302a20);border:2px solid #a99c75;border-radius:5px}.cassette-bottom{position:absolute;bottom:0;left:22%;width:56%;height:24px;clip-path:polygon(9% 0,91% 0,100% 100%,0 100%);background:#595443;display:flex;justify-content:space-around;align-items:center}.cassette-bottom i{width:9px;height:9px;background:#111;border-radius:50%}.tape-foot{display:flex;justify-content:space-between;margin-top:12px;font:9px monospace;letter-spacing:.15em;color:#bbb092}.readout{margin:21px 0 16px;background:#161d15;border:3px solid #161711;padding:12px 14px;box-shadow:inset 0 0 12px #000;display:flex;justify-content:space-between;gap:8px;font:13px monospace;color:#b6c599}.readout span{white-space:nowrap}.transport{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}.transport button{min-width:0;padding:15px 2px 10px;background:linear-gradient(#d2c9b4,#918977);color:#242520;border:1px solid #171815;border-radius:3px;box-shadow:0 5px 0 #191a17, inset 0 1px #fff9;font-size:18px}.transport button small{display:block;font:8px monospace;margin-top:8px;letter-spacing:.05em}.transport button:active,.transport button[aria-pressed=true]{transform:translateY(3px);box-shadow:0 2px 0 #191a17;background:linear-gradient(#938a74,#b5aa92)}.transport .play{color:#384c35}.sliders{display:flex;align-items:center;gap:12px;margin-top:23px;font:10px monospace;color:#d0c6b1}input[type=range]{accent-color:var(--accent);width:100%}.sliders input{max-width:150px}.seek{display:flex;gap:12px;align-items:center;font:11px monospace;color:var(--muted);margin:23px 0 8px}.seek input{min-width:0}.note{font-size:12px;color:var(--muted);line-height:1.6}.panel{background:#211e1a;border:1px solid #685444;border-radius:9px;padding:20px;box-shadow:0 10px 25px #0003}.now-cover{display:block;width:100%;aspect-ratio:1;object-fit:cover;background:linear-gradient(135deg,#946e4d,#35443b);border:1px solid #a48961}.now-title{font:24px Georgia,serif;margin-bottom:8px}.muted{color:var(--muted)}.queue{list-style:none;padding:0;margin:15px 0 0}.queue li{display:flex;gap:6px;border-top:1px solid #574536;padding:8px 0;align-items:center}.queue button{background:transparent;border:0;text-align:left;padding:6px;font-size:12px}.queue .load{flex:1}.queue .remove{color:var(--muted)}.text-button{background:transparent;border:1px solid #79634e;border-radius:5px;padding:9px 12px;font-size:12px}.panel-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:24px}.panel-head h2{margin:0}.library-tools{display:flex;gap:15px;align-items:center;margin-bottom:24px}.library-tools input{flex:1;min-width:0;background:#211d19;color:var(--ink);padding:13px;border:1px solid #79634e;border-radius:5px}.albums{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px}.album{background:#25201b;border:1px solid #67513d;padding:12px;border-radius:6px;box-shadow:0 8px 12px #0003}.album img{width:100%;aspect-ratio:1;object-fit:cover;background:linear-gradient(135deg,#946e4d,#35443b);display:block}.album h2{font:20px Georgia,serif;margin-bottom:7px}.album p{font-size:12px;color:var(--muted)}.album-actions{display:flex;gap:6px}.album-actions button{flex:1;background:#d8c5a2;color:#28251e;border:0;border-radius:3px;padding:10px;font-size:12px}.album-actions button+button{background:#44382b;color:#efdfc1}.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:900px}.setting{display:flex;gap:18px;justify-content:space-between;align-items:center;margin:25px 0}.setting input[type=range]{width:45%}.setting select{background:#3a3027;color:var(--ink);padding:8px;border:1px solid #78624b;border-radius:4px}.setting input[type=checkbox]{accent-color:var(--accent);width:20px;height:20px}.file-label{display:inline-block;cursor:pointer;padding:12px 16px;background:#d8c5a2;color:#28251e;border-radius:4px}.file-label input{display:none}footer{text-align:center;color:#92806d;font:10px monospace;letter-spacing:.2em;padding:25px}#status{min-height:20px;margin-top:16px;font-size:12px;color:#dcc3a1;line-height:1.5}body.no-motion *,body.no-motion *:before,body.no-motion *:after{animation:none!important;transition:none!important}@keyframes spin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.reel{animation:none}}@media(max-width:900px){.player-layout{grid-template-columns:minmax(0,1fr) 220px}.deck{padding:18px}.door{padding:15px}.albums{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:650px){header{flex-direction:column;padding:24px 15px;gap:20px}nav{width:100%;justify-content:center}nav button{padding:11px 20px}main{padding:0 14px}.player-layout,.settings-grid{grid-template-columns:1fr}.deck{padding:17px 12px;border-width:7px}.door{padding:13px 10px;border-width:5px}.cassette{padding:12px 10px 28px}.label{padding:8px 8px 20px}.reel{width:70px;border-width:10px}.tape-title{font-size:17px}.deck-name{font-size:16px}.deck-top span{font-size:8px}.transport button small{font-size:7px}.albums{gap:12px}.album{padding:9px}.album h2{font-size:18px}.now-cover{max-width:200px}.library-tools{flex-wrap:wrap}}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#221e1a">
+  <title>RE-WIND — Cassette Player</title>
+  <link rel="stylesheet" href="./css/global.css">
+  <link rel="stylesheet" href="./css/player.css">
+  <link rel="stylesheet" href="./css/library.css">
+  <script src="./js/library.js" defer></script>
+  <script src="./js/player.js" defer></script>
 </head>
 <body>
-<header><div class="brand">RE-WIND<small>A LITTLE LESS DIGITAL. A LITTLE MORE SOUL.</small></div><nav aria-label="Main navigation"><button data-view="settings">Settings</button><button data-view="player" aria-current="page">Player</button><button data-view="library">Library</button></nav></header>
-<main>
-<section id="player"><div class="eyebrow">The listening room / 01</div><h1>Press play. Stay awhile.</h1><div class="player-layout">
-<div><div class="deck" id="deck"><div class="deck-top"><div class="deck-name">RE-WIND <small>STEREO CASSETTE DECK · RW–80</small></div><span><i class="led"></i>POWER ON</span></div>
-<div class="door"><div class="cassette"><div class="label"><div class="tape-heading"><span class="side">A</span><span class="tape-title" id="tapeTitle">North Lights</span><span>C–60</span></div><div class="window" aria-hidden="true"><div class="reel"></div><div class="tape-bridge"></div><div class="reel"></div></div></div><div class="cassette-bottom" aria-hidden="true"><i></i><i></i><i></i><i></i></div></div><div class="tape-foot"><span>HIGH BIAS · TYPE II</span><span>STEREO / AUTO STOP</span></div></div>
-<div class="readout"><span id="mode">■ STOPPED</span><span id="counter">0000</span><span id="trackNumber">TAPE 01</span></div>
-<div class="transport"><button id="previous" aria-label="Previous track">|◀<small>PREVIOUS</small></button><button id="rewind" aria-label="Rewind 10 seconds">◀◀<small>REWIND</small></button><button id="play" class="play" aria-label="Play or pause" aria-pressed="false">▶<small>PLAY / PAUSE</small></button><button id="stop" aria-label="Stop">■<small>STOP</small></button><button id="forward" aria-label="Forward 10 seconds">▶▶<small>FORWARD</small></button><button id="next" aria-label="Next track">▶|<small>NEXT</small></button></div>
-<div class="sliders"><label for="volume">VOLUME</label><input type="range" id="volume" min="0" max="100" value="70"><button class="text-button" id="mute" aria-pressed="false">Mute</button><span style="margin-left:auto">◉ PHONES</span></div></div>
-<div class="seek"><span id="elapsed">0:00</span><input type="range" id="seek" min="0" max="100" value="0" step=".1" aria-label="Track position" disabled><span id="duration">0:00</span></div><div id="status" role="status" aria-live="polite">Choose a tape and press play. Audio files are optional.</div></div>
-<aside class="panel"><div class="eyebrow">On the deck</div><img class="now-cover" id="cover" src="./assets/images/cd1.png" alt="North Lights album cover" style="margin-top:18px"><h2 class="now-title" id="nowTitle">North Lights</h2><p class="muted" id="nowArtist">North Lights</p><button class="text-button" id="shuffle" aria-pressed="false">Shuffle off</button> <button class="text-button" id="repeat" aria-pressed="false">Repeat off</button><div class="panel-head"><h2>Up next</h2><button class="text-button" id="clear">Clear</button></div><ul class="queue" id="queue"></ul></aside>
-</div></section>
-<section id="library" hidden><div class="eyebrow">Your collection / 02</div><h1>Good things, on repeat.</h1><div class="library-tools"><input id="search" type="search" placeholder="Find a tape…" aria-label="Search library"><span class="muted" id="libraryCount">8 tapes</span></div><div class="albums" id="albums"></div></section>
-<section id="settings" hidden><div class="eyebrow">Make it yours / 03</div><h1>Fine-tune your ritual.</h1><div class="settings-grid"><div class="panel"><h2>Playback</h2><label class="setting">Playback speed<select id="speed"><option value=".75">0.75×</option><option value="1" selected>1× · Original</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option></select></label><label class="setting">Continue to next tape<input id="autonext" type="checkbox" checked></label><label class="setting">Animate cassette reels<input id="motion" type="checkbox" checked></label><p class="note">Keyboard: Space plays or pauses. Left / right arrows rewind or forward 10 seconds when the Player is open.</p></div><div class="panel"><h2>Add your sound</h2><p class="note">Choose an audio file to attach to the tape currently on the deck. This file stays on your device and is available for this visit.</p><label class="file-label">Choose audio file<input id="localAudio" type="file" accept="audio/*"></label><p class="note">For permanent tracks, upload track1.mp3 through track8.mp3 to assets/audio/ in your repository. Each number matches its album cover.</p><p class="note">Album covers load from assets/images/cd1.png through cd8.png. Edit the album list in this page to change titles or audio paths.</p></div></div></section>
-</main><footer>RE-WIND · BUILT FOR THE LONG PLAY</footer><audio id="audio" preload="none"></audio>
-<script src="js/music-library.js"></script>
-  
-<script>
-'use strict';
-// EDIT THESE TITLES, ARTISTS AND AUDIO PATHS TO CUSTOMIZE YOUR LIBRARY.
-const albums=[
-{title:'North Lights',artist:'North Lights'},
-{title:'Petal Static',artist:'Petal Static'},
-{title:'Orbital Drift',artist:'Orbital Drift'},
-{title:'Midnight Lanes',artist:'Midnight Lanes'},
-{title:'Tides',artist:'Tides'},
-{title:'Fracture Plans',artist:'Fracture Plans'},
-{title:'Slow Rooms',artist:'Slow Rooms'},
-{title:'Vacant Frequencies',artist:'Vacant Frequencies'}
-].map((a,i)=>({...a,cover:'./assets/images/cd'+(i+1)+'.png',audio:'./assets/audio/track'+(i+1)+'.mp3'}));
-const $=id=>document.getElementById(id),audio=$('audio');
-let current=0,queue=[1,2,3],shuffle=false,repeat=false,view='player',generation=0;
-const localFiles=new Map();
-function status(text){$('status').textContent=text}
-function navigate(name){view=name;['settings','player','library'].forEach(id=>{$(id).hidden=id!==name});document.querySelectorAll('[data-view]').forEach(b=>{if(b.dataset.view===name)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')})}
-document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>navigate(b.dataset.view));
-function state(mode){$('deck').classList.toggle('playing',mode==='PLAYING');$('play').setAttribute('aria-pressed',String(mode==='PLAYING'));$('mode').textContent=({'PLAYING':'▶ ','PAUSED':'Ⅱ ','STOPPED':'■ ','LOADING':'… ','NO AUDIO':'○ '}[mode]||'')+mode}
-function time(n){if(!Number.isFinite(n))return '0:00';return Math.floor(n/60)+':'+String(Math.floor(n%60)).padStart(2,'0')}
-function progress(){const d=audio.duration,t=audio.currentTime||0;$('elapsed').textContent=time(t);$('duration').textContent=time(d);$('counter').textContent=String(Math.floor(t)).padStart(4,'0');$('seek').disabled=!Number.isFinite(d)||d<=0;$('seek').value=Number.isFinite(d)&&d>0?t/d*100:0}
-function select(index){generation++;audio.pause();current=index;audio.src=localFiles.get(index)||albums[index].audio;audio.load();$('tapeTitle').textContent=$('nowTitle').textContent=albums[index].title;$('nowArtist').textContent=albums[index].artist;$('cover').src=albums[index].cover;$('cover').alt=albums[index].title+' album cover';$('cover').style.opacity='1';$('trackNumber').textContent='TAPE '+String(index+1).padStart(2,'0');state('STOPPED');progress();status('Loaded '+albums[index].title+'. Press play.')}
-async function play(){const token=generation;state('LOADING');status('Loading '+albums[current].title+'…');try{await audio.play();if(token!==generation)return}catch(e){if(token!==generation||e.name==='AbortError')return;state('NO AUDIO');status('Audio unavailable. Add assets/audio/track'+(current+1)+'.mp3 or choose a local file in Settings.')}}
-function toggle(){if(audio.paused)play();else audio.pause()}
-function next(autoplay=false){let id;if(queue.length){id=queue.shift();renderQueue()}else if(shuffle){id=(current+1+Math.floor(Math.random()*(albums.length-1)))%albums.length}else{id=(current+1)%albums.length}select(id);if(autoplay)play()}
-function renderQueue(){const list=$('queue');list.replaceChildren();queue.forEach((id,i)=>{const li=document.createElement('li'),load=document.createElement('button'),remove=document.createElement('button');load.className='load';load.textContent=String(i+1).padStart(2,'0')+' · '+albums[id].title;load.onclick=()=>{queue.splice(i,1);renderQueue();select(id);navigate('player')};remove.className='remove';remove.textContent='×';remove.setAttribute('aria-label','Remove '+albums[id].title+' from queue');remove.onclick=()=>{queue.splice(i,1);renderQueue()};li.append(load,remove);list.append(li)});if(!queue.length){const li=document.createElement('li');li.textContent='Queue is empty. Add tapes from Library.';li.className='note';list.append(li)}}
-function renderLibrary(){const term=$('search').value.toLowerCase(),grid=$('albums');grid.replaceChildren();let count=0;albums.forEach((a,i)=>{if(!(a.title+' '+a.artist).toLowerCase().includes(term))return;count++;const card=document.createElement('article');card.className='album';const img=document.createElement('img');img.src=a.cover;img.alt=a.title+' album cover';img.onerror=()=>{img.style.opacity='.25';img.removeAttribute('src')};const title=document.createElement('h2');title.textContent=a.title;const artist=document.createElement('p');artist.textContent=a.artist;const actions=document.createElement('div');actions.className='album-actions';const load=document.createElement('button');load.textContent='Load tape';load.onclick=()=>{select(i);navigate('player')};const add=document.createElement('button');add.textContent='+ Queue';add.onclick=()=>{queue.push(i);renderQueue();add.textContent='Added ✓';setTimeout(()=>add.textContent='+ Queue',900)};actions.append(load,add);card.append(img,title,artist,actions);grid.append(card)});$('libraryCount').textContent=count+' tape'+(count===1?'':'s')}
-$('play').onclick=toggle;$('stop').onclick=()=>{generation++;audio.pause();audio.currentTime=0;state('STOPPED');progress();status('Stopped. Tape rewound to the beginning.')};
-$('previous').onclick=()=>{const resume=!audio.paused;select((current+albums.length-1)%albums.length);if(resume)play()};$('next').onclick=()=>next(!audio.paused);
-function skip(seconds){if(Number.isFinite(audio.duration)){audio.currentTime=Math.max(0,Math.min(audio.duration,audio.currentTime+seconds));progress()}else status('Load an audio file to rewind or fast-forward.')}
-$('rewind').onclick=()=>skip(-10);$('forward').onclick=()=>skip(10);
-$('seek').oninput=()=>{if(Number.isFinite(audio.duration))audio.currentTime=Number($('seek').value)/100*audio.duration};
-$('volume').oninput=()=>{audio.volume=Number($('volume').value)/100};
-$('mute').onclick=()=>{audio.muted=!audio.muted;$('mute').textContent=audio.muted?'Unmute':'Mute';$('mute').setAttribute('aria-pressed',String(audio.muted))};
-$('speed').onchange=()=>audio.playbackRate=Number($('speed').value);
-$('motion').onchange=()=>document.body.classList.toggle('no-motion',!$('motion').checked);
-$('shuffle').onclick=()=>{shuffle=!shuffle;$('shuffle').textContent='Shuffle '+(shuffle?'on':'off');$('shuffle').setAttribute('aria-pressed',String(shuffle))};
-$('repeat').onclick=()=>{repeat=!repeat;$('repeat').textContent='Repeat '+(repeat?'on':'off');$('repeat').setAttribute('aria-pressed',String(repeat))};
-$('clear').onclick=()=>{queue=[];renderQueue()};$('search').oninput=renderLibrary;
-$('localAudio').onchange=e=>{const file=e.target.files[0];if(!file)return;if(localFiles.has(current))URL.revokeObjectURL(localFiles.get(current));localFiles.set(current,URL.createObjectURL(file));select(current);status('Attached '+file.name+'. Press play.');navigate('player');e.target.value=''};
-audio.addEventListener('playing',()=>{state('PLAYING');status('Now playing · '+albums[current].title)});
-audio.addEventListener('pause',()=>{if(!audio.ended)state(audio.currentTime>0?'PAUSED':'STOPPED')});
-audio.addEventListener('waiting',()=>state('LOADING'));
-audio.addEventListener('error',()=>{state('NO AUDIO');status('Audio unavailable. Add assets/audio/track'+(current+1)+'.mp3 or choose a local file in Settings.')});
-audio.addEventListener('loadedmetadata',()=>{audio.playbackRate=Number($('speed').value);progress()});audio.addEventListener('timeupdate',progress);
-audio.addEventListener('ended',()=>{if(repeat){audio.currentTime=0;play()}else if($('autonext').checked)next(true);else{state('STOPPED');status('Tape finished.')}});
-$('cover').onerror=()=>{$('cover').style.opacity='.25';$('cover').removeAttribute('src')};
-document.addEventListener('keydown',e=>{if(view!=='player'||e.target.closest('input,select,textarea,button')||e.ctrlKey||e.metaKey||e.altKey)return;if(e.code==='Space'){e.preventDefault();toggle()}if(e.key==='ArrowLeft'){e.preventDefault();skip(-10)}if(e.key==='ArrowRight'){e.preventDefault();skip(10)}});
-window.addEventListener('beforeunload',()=>localFiles.forEach(url=>URL.revokeObjectURL(url)));
-audio.volume=.7;renderLibrary();renderQueue();select(0);
-</script>
+  <header>
+    <div class="brand">RE-WIND<small>A LITTLE LESS DIGITAL. A LITTLE MORE SOUL.</small></div>
+    <nav aria-label="Main navigation">
+      <button type="button" data-view="settings">Settings</button>
+      <button type="button" data-view="player" aria-current="page">Player</button>
+      <button type="button" data-view="library">Library</button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="player">
+      <div class="eyebrow">The listening room / 01</div>
+      <h1>Press play. Stay awhile.</h1>
+      <div class="player-layout">
+        <div>
+          <div class="deck" id="deck">
+            <div class="deck-top">
+              <div class="deck-name">RE-WIND<small>STEREO CASSETTE DECK · RW–80</small></div>
+              <span><i class="led"></i>POWER ON</span>
+            </div>
+            <div class="door">
+              <div class="cassette">
+                <div class="label">
+                  <div class="tape-heading">
+                    <span class="side">A</span>
+                    <span class="tape-title" id="tapeTitle">North Lights</span>
+                    <span>C–60</span>
+                  </div>
+                  <div class="window" aria-hidden="true">
+                    <div class="reel"></div>
+                    <div class="tape-bridge"></div>
+                    <div class="reel"></div>
+                  </div>
+                </div>
+                <div class="cassette-bottom" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+              </div>
+              <div class="tape-foot"><span>HIGH BIAS · TYPE II</span><span>STEREO / AUTO STOP</span></div>
+            </div>
+            <div class="readout">
+              <span id="mode">■ STOPPED</span>
+              <span id="counter">0000</span>
+              <span id="trackNumber">TAPE 01</span>
+            </div>
+            <div class="transport" aria-label="Playback controls">
+              <button type="button" id="previous" aria-label="Previous tape">|◀<small>PREVIOUS</small></button>
+              <button type="button" id="rewind" aria-label="Rewind 10 seconds">◀◀<small>REWIND</small></button>
+              <button type="button" id="play" class="play" aria-label="Play or pause" aria-pressed="false">▶<small>PLAY / PAUSE</small></button>
+              <button type="button" id="stop" aria-label="Stop">■<small>STOP</small></button>
+              <button type="button" id="forward" aria-label="Forward 10 seconds">▶▶<small>FORWARD</small></button>
+              <button type="button" id="next" aria-label="Next tape">▶|<small>NEXT</small></button>
+            </div>
+            <div class="sliders">
+              <label for="volume">VOLUME</label>
+              <input type="range" id="volume" min="0" max="100" value="70">
+              <button type="button" class="text-button" id="mute" aria-pressed="false">Mute</button>
+              <span style="margin-left:auto">◉ PHONES</span>
+            </div>
+          </div>
+          <div class="seek">
+            <span id="elapsed">0:00</span>
+            <input type="range" id="seek" min="0" max="100" value="0" step=".1" aria-label="Track position" disabled>
+            <span id="duration">0:00</span>
+          </div>
+          <p id="status" role="status" aria-live="polite">Choose a tape and press play. Audio files are optional.</p>
+        </div>
+
+        <aside class="panel">
+          <div class="eyebrow">On the deck</div>
+          <img class="now-cover" id="cover" src="./assets/images/cd1.png" alt="North Lights album cover">
+          <h2 class="now-title" id="nowTitle">North Lights</h2>
+          <p class="muted" id="nowArtist">North Lights</p>
+          <button type="button" class="text-button" id="shuffle" aria-pressed="false">Shuffle off</button>
+          <button type="button" class="text-button" id="repeat" aria-pressed="false">Repeat off</button>
+          <div class="panel-head">
+            <h2>Up next</h2>
+            <button type="button" class="text-button" id="clear">Clear</button>
+          </div>
+          <ul class="queue" id="queue" aria-label="Up next"></ul>
+        </aside>
+      </div>
+    </section>
+
+    <section id="library" hidden>
+      <div class="eyebrow">Your collection / 02</div>
+      <h1>Good things, on repeat.</h1>
+      <div class="library-tools">
+        <input id="search" type="search" placeholder="Find a tape…" aria-label="Search library">
+        <span class="muted" id="libraryCount">8 tapes</span>
+      </div>
+      <div class="albums" id="albums"></div>
+    </section>
+
+    <section id="settings" hidden>
+      <div class="eyebrow">Make it yours / 03</div>
+      <h1>Fine-tune your ritual.</h1>
+      <div class="settings-grid">
+        <div class="panel">
+          <h2>Playback</h2>
+          <label class="setting">Playback speed
+            <select id="speed">
+              <option value=".75">0.75×</option>
+              <option value="1" selected>1× · Original</option>
+              <option value="1.25">1.25×</option>
+              <option value="1.5">1.5×</option>
+            </select>
+          </label>
+          <label class="setting">Continue to next tape<input id="autonext" type="checkbox" checked></label>
+          <label class="setting">Animate cassette reels<input id="motion" type="checkbox" checked></label>
+          <p class="note">Keyboard: Space plays or pauses. Left / right arrows rewind or forward 10 seconds when the Player is open.</p>
+        </div>
+        <div class="panel">
+          <h2>Add your sound</h2>
+          <p class="note">Choose an audio file to attach to the tape currently on the deck. The file stays on your device and is available for this visit.</p>
+          <label class="file-label">Choose audio file<input id="localAudio" type="file" accept="audio/*"></label>
+          <p class="note">Bundled tracks are not included. To add permanent tracks, place track1.mp3 through track8.mp3 in assets/audio/; each number matches its album cover.</p>
+          <p class="note">Album covers load from assets/images/cd1.png through cd8.png. Edit the album list in js/library.js to change titles or audio paths.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>RE-WIND · BUILT FOR THE LONG PLAY</footer>
+  <audio id="audio" preload="none"></audio>
 </body>
 </html>
