@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RE-WIND — Music Lives On</title>
+  <style>
+    :root { --red:#d61b39; --dark:#171719; --cream:#f7f5f1; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; display:grid; place-items:center;
+      background:radial-gradient(ellipse at 24% 18%,#cbb4a6 0%,transparent 48%),
+                 radial-gradient(ellipse at 88% 78%,#c4aaa2 0%,transparent 47%),#393132;
+      font-family:Arial,Helvetica,sans-serif; color:#222; }
+    button,input { font:inherit; }
+    button { cursor:pointer; }
+    .stage { width:min(100vw,calc(100dvh * 1672 / 941)); aspect-ratio:1672/941;
+      position:relative; background:#fbfaf8; overflow:hidden;
+      box-shadow:0 20px 85px #120b0b7c; isolation:isolate; container-type:inline-size; }
+    .scene { display:none; position:absolute; inset:0; overflow:hidden; }
+    .scene.active { display:block; }
+    .shot { position:absolute; inset:0; width:100%; height:100%; object-fit:fill; user-select:none; pointer-events:none; }
+    .ambience { position:absolute; inset:9.2% 0 0; pointer-events:none;
+      background:radial-gradient(circle at 5% 95%,#d0794a0b,transparent 38%),
+                 radial-gradient(circle at 93% 90%,#b4242909,transparent 36%); }
+    .hotspot { position:absolute; padding:0; background:transparent; color:transparent;
+      border:0; border-radius:4px; z-index:4; -webkit-tap-highlight-color:transparent; }
+    .hotspot:hover { background:#ff34340b; box-shadow:inset 0 0 0 1px #e6525266; }
+    .hotspot:focus-visible { outline:3px solid var(--red); outline-offset:2px; }
+    .nav-hotspot:hover { background:#ffffff16; box-shadow:none; }
+    .album-hotspot { border-radius:8px; }
+    .album-hotspot:hover { background:#ffffff0c; box-shadow:inset 0 0 0 3px #d92945; }
+    .album-hotspot.selected { box-shadow:inset 0 0 0 3px #d92945; }
+    .album-hotspot.filtered { background:#fafafbd9; pointer-events:none; }
+    .reel { position:absolute; top:58.9%; width:3.7%; aspect-ratio:1; z-index:3;
+      border-radius:50%; pointer-events:none; opacity:.95;
+      background:radial-gradient(circle,#262729 0 22%,transparent 23% 29%,#c2c3c3 30% 38%,transparent 39%),
+                 repeating-conic-gradient(#1a1b1d 0deg 28deg,#73777a 29deg 40deg,#171819 41deg 60deg);
+      border:clamp(1px,.17cqw,3px) solid #b0b3b4;
+      box-shadow:0 0 0 2px #4447,inset 0 0 3px #000b;
+      animation:turn 1.25s linear infinite; animation-play-state:paused; }
+    .reel::after { content:""; position:absolute; inset:35%; border-radius:50%; background:#252628; box-shadow:inset 0 1px 3px #000; }
+    .reel.left { left:31.25%; }
+    .reel.right { left:40.08%; animation-duration:1.4s; }
+    .stage[data-playing="true"] .reel { animation-play-state:running; }
+    @keyframes turn { to { transform:rotate(360deg); } }
+    .eject-cover { display:none; position:absolute; z-index:3; left:28%;top:52.6%;width:20%;height:17.2%;
+      place-items:center; background:linear-gradient(140deg,#1f2023,#33353a 55%,#161719);
+      box-shadow:inset 0 0 0 3px #111,0 2px 9px #0007; color:#eee; font-size:1.2cqw;
+      letter-spacing:.15em; font-weight:700; }
+    .stage[data-ejected="true"] .eject-cover { display:grid; }
+    .stage[data-ejected="true"] .reel { display:none; }
+    .playing-bars { display:none; position:absolute; z-index:5; left:71.95%;top:73.8%;
+      height:2.6%; align-items:end; gap:2px; }
+    .playing-bars i { display:block; width:.26cqw; background:var(--red); animation:bar .52s ease-in-out infinite alternate; }
+    .playing-bars i:nth-child(1) {height:43%;} .playing-bars i:nth-child(2) {height:90%;animation-delay:-.27s;}
+    .playing-bars i:nth-child(3) {height:65%;animation-delay:-.16s;}
+    .stage[data-playing="true"] .playing-bars {display:flex;}
+    @keyframes bar {to{height:25%;}}
+    .now-playing { position:absolute; z-index:5; right:5%;bottom:2%; padding:.55% 1%;
+      max-width:28%; background:#17171bdc; border:1px solid #ffffff24; color:#fff;
+      font-size:1cqw; letter-spacing:.04em; border-radius:6px;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis; opacity:0; transition:opacity .3s; }
+    .now-playing.visible {opacity:1;}
+    .library-search { position:absolute; z-index:5; left:6%;top:92.2%;width:43%;height:4.4%;
+      border:0;outline:0;background:#faf9f8; color:#252525; font-size:1.07cqw;
+      font-style:italic;padding:0 .7%; }
+    .library-search:focus {box-shadow:0 2px 0 var(--red);}
+    .import-shortcut { position:absolute; z-index:6; right:13%;bottom:1.6%;
+      padding:.6% 1%; border-radius:8px; border:1px solid #c8beb6;
+      color:#403938; background:#fffdf6e8; font-size:1cqw; box-shadow:0 2px 9px #0002; }
+    .import-shortcut:hover {border-color:#bb263c;color:#bb263c;}
+    .toast {position:absolute; z-index:30; bottom:3.5%;left:50%; transform:translate(-50%,9px);
+      background:#211d20ef;color:white;border:1px solid #d76875;
+      border-radius:8px;padding:1% 1.6%;font-size:1.04cqw;
+      opacity:0; pointer-events:none;transition:opacity .2s,transform .2s; max-width:70%;text-align:center;}
+    .toast.show {opacity:1;transform:translate(-50%,0);}
+    /* SETTINGS: original interface styled to match the reference screenshots. */
+    .settings-scene {background:radial-gradient(ellipse at 32% 90%,#e2c7b7 0,transparent 51%),#faf9f7;}
+    .topbar {height:9.2%; background:#1b1b1d; display:flex;align-items:center; gap:2.8%;padding:0 2%;color:#eee;}
+    .brand {display:flex; align-items:center;gap:1%; width:29%;white-space:nowrap;}
+    .brand .disc {font-size:3.8cqw;line-height:1;color:#eee;}
+    .brand strong {font-size:3.05cqw;letter-spacing:.035em;line-height:.85;}
+    .brand small {display:block;letter-spacing:.46em;font-size:.73cqw;margin-top:.8em;}
+    .topbar nav {display:flex;align-items:center;justify-content:space-between;flex:1;height:100%;}
+    .topbar nav button {background:none;color:#eee;border:0;font-size:1.13cqw;height:80%;padding:0 3%;}
+    .topbar nav button.current {border-bottom:3px solid #d62040;color:#fff;}
+    .settings-content {height:90.8%;padding:6% 8%;display:flex;gap:5%;align-items:center;}
+    .settings-rack {background:linear-gradient(155deg,#44474b,#17181b 54%,#323438);border:clamp(2px,.36cqw,6px) solid #686a6c;
+      border-radius:2cqw;box-shadow:0 2cqw 2.5cqw #0004,inset 0 0 0 .3cqw #18191c;
+      width:76%;min-height:64%;padding:3% 4%;color:#f1eeee;}
+    .rack-title {font-weight:900;letter-spacing:.16em;font-size:2.4cqw;border-bottom:.4cqw solid #d72b43;padding-bottom:1.4%;}
+    .rack-controls {display:grid;grid-template-columns:repeat(3,1fr);gap:3%;margin-top:6%;}
+    .control {display:flex;flex-direction:column;align-items:center;gap:1.5cqw;}
+    .control label {letter-spacing:.1em;font-size:1.06cqw;}
+    .control input[type=range]{accent-color:#cb253e;width:90%;}
+    .dial {height:6.5cqw;width:6.5cqw;border-radius:50%;border:.65cqw ridge #bfc1c4;
+      background:radial-gradient(circle at 35% 30%,#6f7175,#17191b 65%);box-shadow:0 .5cqw 1cqw #000b;position:relative;}
+    .dial:after {content:"";position:absolute;left:49%;top:9%;width:.23cqw;height:2cqw;background:#efbca5;}
+    .rack-meter {margin-top:8%;height:8cqw;background:#171718;display:flex;align-items:end;gap:2%;padding:2%;border:2px solid #9f8070;}
+    .rack-meter span {flex:1;background:linear-gradient(0deg,#e6a35f,#e4be77);height:45%;box-shadow:0 0 9px #ffb45a78;}
+    .rack-meter span:nth-child(3n){height:80%;} .rack-meter span:nth-child(5n){height:61%;}
+    .settings-side {flex:1;min-width:0;display:flex;flex-direction:column;gap:1.5cqw;}
+    .settings-side h2 {font-size:2.1cqw;margin:0;}
+    .settings-side p {font-size:1.08cqw;line-height:1.5;}
+    .settings-side button {background:#cb2942;color:#fff;border:none;border-radius:.65cqw;
+      padding:1.1cqw 1.2cqw;font-size:1.05cqw;}
+    .volume-tag {text-align:center;color:#e1d2c9;font-size:.96cqw;}
+    #filePicker {display:none;}
+    .mobile-nav {display:none;}
+    @media(max-width:600px){
+      body {display:block;overflow-x:auto;}
+      .stage {min-width:760px;width:760px;}
+      .mobile-nav {display:flex;position:fixed;bottom:9px;left:0;right:0;z-index:50;justify-content:center;gap:12px;}
+      .mobile-nav button {background:#272124;color:white;border:1px solid #bc7b86;border-radius:6px;padding:9px 14px;}
+    }
+    @media(prefers-reduced-motion:reduce){.reel,.playing-bars i{animation-duration:4s;}}
+  </style>
+</head>
+<body>
+  <main class="stage" id="stage" data-playing="false" data-ejected="false" aria-label="RE-WIND cassette music app">
+    <section class="scene settings-scene" id="settings" aria-label="Settings">
+      <header class="topbar">
+        <div class="brand"><span class="disc">◎</span><div><strong>RE-WIND</strong><small>MUSIC LIVES ON</small></div></div>
+        <nav aria-label="Pages"><button data-go="settings" class="current">SETTINGS</button><button data-go="player">PLAYER</button><button data-go="library">LIBRARY</button></nav>
+      </header>
+      <div class="settings-content">
+        <div class="settings-rack">
+          <div class="rack-title">RE-WIND / ANALOG AUDIO</div>
+          <div class="rack-controls">
+            <div class="control"><label for="warmth">TAPE WARMTH</label><div class="dial"></div><input id="warmth" type="range" min="0" max="100" value="35"></div>
+            <div class="control"><label for="volume">VOLUME</label><div class="dial"></div><input id="volume" type="range" min="0" max="100" value="70"></div>
+            <div class="control"><label for="speed">PLAYBACK SPEED</label><div class="dial"></div><input id="speed" type="range" min="75" max="125" value="100"></div>
+          </div>
+          <div class="rack-meter" aria-label="Decorative retro VU meter"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+        </div>
+        <aside class="settings-side">
+          <h2>YOUR MIXTAPES.</h2>
+          <p>Import your own audio files to play them in your vintage cassette deck. Or upload <b>track1.mp3</b> through <b>track8.mp3</b> into <b>assets/audio/</b>.</p>
+          <button type="button" id="importButton">＋ IMPORT AUDIO</button>
+          <button type="button" data-go="library">OPEN LIBRARY →</button>
+          <div class="volume-tag" id="importCount">NO AUDIO IMPORTED</div>
+        </aside>
+      </div>
+    </section>
+    <section class="scene active" id="player" aria-label="Player">
+      <img class="shot" src="./assets/images/player-ui.png" alt="Vintage RE-WIND red and black cassette boombox with up-next playlist" />
+      <div class="ambience"></div>
+      <div class="reel left" aria-hidden="true"></div><div class="reel right" aria-hidden="true"></div>
+      <div class="eject-cover" aria-hidden="true">NO TAPE INSERTED</div>
+      <div class="playing-bars" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div class="now-playing" id="nowPlaying"></div>
+    </section>
+    <section class="scene" id="library" aria-label="Cassette library">
+      <img class="shot" src="./assets/images/library-ui.png" alt="Eight beautiful cassette albums arranged as a music library" />
+      <div class="ambience"></div>
+      <input class="library-search" type="search" id="librarySearch" aria-label="Search albums" placeholder="Search albums, artists, or tags..." />
+      <button class="import-shortcut" id="libraryImport" type="button">＋ IMPORT AUDIO</button>
+    </section>
+    <input id="filePicker" type="file" accept="audio/*,.mp3,.wav,.m4a,.ogg" multiple />
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </main>
+  <nav class="mobile-nav" aria-label="Mobile navigation"><button data-go="settings">Settings</button><button data-go="player">Player</button><button data-go="library">Library</button></nav>
+  <script>
+    'use strict';
+    // This page is self-contained; it does not require any other JavaScript files.
+    const $ = id => document.getElementById(id);
+    const stage = $('stage');
+    const audio = new Audio();
+    audio.preload = 'metadata';
+    audio.volume = 0.7;
+    const albums = [
+      'North Lights', 'Petal Static', 'Orbital Drift', 'Midnight Lanes',
+      'Tides', 'Fracture Plans', 'Slow Rooms', 'Vacant Frequencies'
+    ];
+    let currentView = 'player';
+    let selectedAlbum = 1; // Petal Static, matching the initial screenshot.
+    let imported = [];
+    let currentSource = '';
+    let toastTimeout;
+    const pct = (value, total) => `${(value / total) * 100}%`;
+
+    function notice(text) {
+      const el = $('toast'); el.textContent = text; el.classList.add('show');
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => el.classList.remove('show'), 2300);
+    }
+    function addHit(scene, rect, label, click, classes = '') {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = `hotspot ${classes}`;
+      b.setAttribute('aria-label', label); b.title = label;
+      b.style.left = pct(rect[0], 1672); b.style.top = pct(rect[1], 941);
+      b.style.width = pct(rect[2], 1672); b.style.height = pct(rect[3], 941);
+      b.addEventListener('click', click); scene.appendChild(b);
+      return b;
+    }
+    function showView(view) {
+      currentView = view;
+      for (const scene of document.querySelectorAll('.scene')) {
+        const active = scene.id === view;
+        scene.classList.toggle('active', active);
+        scene.setAttribute('aria-hidden', String(!active));
+      }
+      document.querySelectorAll('[data-go]').forEach(b =>
+        b.classList.toggle('current', b.dataset.go === view));
+    }
+    document.querySelectorAll('[data-go]').forEach(button =>
+      button.addEventListener('click', () => showView(button.dataset.go)));
+
+    // Top navigation click targets match the user-provided screenshots pixel-for-pixel.
+    for (const scene of [$('player'), $('library')]) {
+      addHit(scene, [508, 18, 62, 65], 'Previous page', () =>
+        showView(currentView === 'library' ? 'player' : 'settings'), 'nav-hotspot');
+      addHit(scene, [1082, 18, 65, 65], 'Next page', () =>
+        showView(currentView === 'settings' ? 'player' : 'library'), 'nav-hotspot');
+      addHit(scene, [585, 18, 119, 60], 'Settings', () => showView('settings'), 'nav-hotspot');
+      addHit(scene, [725, 18, 198, 60], 'Player', () => showView('player'), 'nav-hotspot');
+      addHit(scene, [935, 18, 185, 60], 'Library', () => showView('library'), 'nav-hotspot');
+      addHit(scene, [1503, 18, 52, 60], 'Audio settings', () => showView('settings'), 'nav-hotspot');
+    }
+    function sourceForAlbum(index) {
+      if (imported.length) return imported[index % imported.length].url;
+      return `./assets/audio/track${index + 1}.mp3`;
+    }
+    function loadSelected(force = false) {
+      const src = sourceForAlbum(selectedAlbum);
+      if (force || currentSource !== src) {
+        audio.pause();
+        audio.src = src;
+        audio.load();
+        currentSource = src;
+      }
+      $('nowPlaying').textContent = `${albums[selectedAlbum]} · ${imported.length ? imported[selectedAlbum % imported.length].name : 'CASSETTE'}`;
+      $('nowPlaying').classList.add('visible');
+      stage.dataset.ejected = 'false';
+    }
+    async function play() {
+      if (selectedAlbum == null) {
+        notice('Choose a cassette from the library first.');
+        showView('library'); return;
+      }
+      if (!currentSource) loadSelected();
+      if (!imported.length) {
+        // A local MP3 in assets/audio/ is supported. If missing, provide an import prompt.
+        try { await audio.play(); }
+        catch (err) { notice('Add assets/audio/track' + (selectedAlbum + 1) + '.mp3 or import audio.'); }
+        return;
+      }
+      try { await audio.play(); }
+      catch (err) { notice('Unable to play this file. Try another audio format.'); }
+    }
+    function pause() { audio.pause(); }
+    function togglePlay() { if (audio.paused) play(); else pause(); }
+    function stop() { audio.pause(); try { audio.currentTime = 0; } catch {} notice('Stopped'); }
+    function seek(seconds) {
+      if (!currentSource || !Number.isFinite(audio.duration)) {
+        notice('Load a track before rewinding.'); return;
+      }
+      audio.currentTime = Math.max(0, Math.min(audio.duration, audio.currentTime + seconds));
+      notice(seconds < 0 ? '⏪ Rewind 10 seconds' : '⏩ Forward 10 seconds');
+    }
+    function eject() {
+      audio.pause(); audio.removeAttribute('src'); audio.load();
+      selectedAlbum = null; currentSource = '';
+      stage.dataset.ejected = 'true'; $('nowPlaying').classList.remove('visible');
+      notice('Tape ejected — choose a new cassette.');
+    }
+    async function chooseAlbum(index) {
+      selectedAlbum = index; loadSelected(true); showView('player');
+      notice(`Inserted ${albums[index]}`);
+      if (imported.length) await play();
+    }
+    audio.addEventListener('play', () => { stage.dataset.playing = 'true'; });
+    audio.addEventListener('pause', () => { stage.dataset.playing = 'false'; });
+    audio.addEventListener('ended', () => { stage.dataset.playing = 'false'; notice('Tape finished.'); });
+    audio.addEventListener('error', () => {
+      stage.dataset.playing = 'false';
+      if (currentSource && !imported.length) notice('Audio missing. Import a song in Settings.');
+    });
+    $('volume').addEventListener('input', e => { audio.volume = Number(e.target.value) / 100; });
+    $('speed').addEventListener('input', e => { audio.playbackRate = Number(e.target.value) / 100; });
+    // The Tape Warmth slider is visual until an effects engine is connected.
+    $('warmth').addEventListener('input', e => { document.querySelector('.settings-rack').style.filter = `sepia(${Number(e.target.value) / 300})`; });
+    const deck = $('player');
+    addHit(deck, [427, 315, 63, 59], 'Rewind 10 seconds', () => seek(-10));
+    addHit(deck, [517, 315, 63, 59], 'Play or pause', togglePlay);
+    addHit(deck, [604, 315, 69, 59], 'Stop', stop);
+    addHit(deck, [692, 315, 74, 59], 'Eject cassette', eject);
+    addHit(deck, [785, 315, 69, 59], 'Fast-forward 10 seconds', () => seek(10));
+    addHit(deck, [187, 270, 98, 105], 'Volume control: click to set volume', () => {
+      audio.volume = audio.volume >= .95 ? .15 : Math.min(1, audio.volume + .15);
+      $('volume').value = Math.round(audio.volume * 100); notice(`Volume ${Math.round(audio.volume * 100)}%`);
+    });
+    // Click any of the four pictured 'Up next' cassette tapes.
+    [[1191,298,418,85],[1191,387,418,76],[1191,468,418,72],[1191,545,418,75]].forEach((r, i) =>
+      addHit(deck, r, `Play ${albums[i]}`, () => chooseAlbum(i)));
+    // Clickable library album covers, matching four columns by two rows.
+    const albumRects = [
+      [51,113,372,361],[448,113,371,361],[843,113,376,361],[1239,113,384,361],
+      [51,487,372,361],[448,487,371,361],[843,487,376,361],[1239,487,384,361]
+    ];
+    const albumButtons = albumRects.map((r, i) =>
+      addHit($('library'), r, `Insert ${albums[i]} cassette`, () => chooseAlbum(i), 'album-hotspot'));
+    $('librarySearch').addEventListener('input', e => {
+      const q = e.target.value.toLowerCase().trim();
+      albumButtons.forEach((b, i) => b.classList.toggle('filtered', !albums[i].toLowerCase().includes(q)));
+    });
+    function importAudio() { $('filePicker').click(); }
+    $('importButton').addEventListener('click', importAudio);
+    $('libraryImport').addEventListener('click', importAudio);
+    $('filePicker').addEventListener('change', async e => {
+      const files = [...e.target.files]; if (!files.length) return;
+      imported.forEach(t => URL.revokeObjectURL(t.url));
+      imported = files.map(f => ({name:f.name.replace(/\.[^.]+$/, ''), url:URL.createObjectURL(f)}));
+      $('importCount').textContent = `${files.length} AUDIO FILE(S) READY`;
+      if (selectedAlbum == null) selectedAlbum = 0;
+      loadSelected(true); showView('player');
+      notice(`${files.length} audio file(s) imported`);
+      await play();
+    });
+    document.addEventListener('keydown', e => {
+      if (['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)) return;
+      if (e.code === 'Space') { e.preventDefault(); togglePlay(); }
+      if (e.code === 'ArrowLeft') { e.preventDefault(); seek(-10); }
+      if (e.code === 'ArrowRight') { e.preventDefault(); seek(10); }
+    });
+    showView('player');
+  </script>
+</body>
+</html>
