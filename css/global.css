@@ -1,1 +1,183 @@
 
+/* =========================================
+   RE-WIND — GLOBAL CSS
+   Retro Music Player
+   ========================================= */
+
+/* Global Colors */
+:root {
+  --bg-primary: #171b24;
+  --bg-secondary: #252c39;
+  --bg-panel: #303849;
+
+  --text-primary: #f5eedc;
+  --text-secondary: #b8b6ae;
+
+  --accent: #e7a56a;
+  --accent-hover: #ffc18b;
+
+  --border-color: #555b65;
+
+  --radius: 12px;
+  --transition: 0.25s ease;
+}
+
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: "Courier New", monospace;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+/* Headings */
+h1, h2, h3 {
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+h1 {
+  font-size: 2rem;
+  color: var(--accent);
+}
+
+h2 {
+  font-size: 1.5rem;
+}
+
+p {
+  color: var(--text-secondary);
+}
+
+/* Buttons */
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-panel);
+  color: var(--text-primary);
+  padding: 10px 18px;
+  transition: var(--transition);
+}
+
+button:hover {
+  background: var(--accent);
+  color: #171b24;
+  border-color: var(--accent);
+}
+
+button:active {
+  transform: scale(0.95);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Navigation */
+nav {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+  padding: 20px;
+}
+
+/* Application Windows */
+[data-view] {
+  width: 100%;
+  animation: fadeIn 0.3s ease;
+}
+
+/* Hide Inactive Windows */
+[hidden] {
+  display: none !important;
+}
+
+/* Music Information */
+#track-title {
+  color: var(--text-primary);
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+#artist-name {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+/* Album Artwork */
+#disc-art {
+  max-width: 100%;
+  height: auto;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+/* Retro Panels */
+.retro-panel {
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.4);
+}
+
+/* Playback Button States */
+body[data-playing="true"] [data-action="play"] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 1.6rem;
+  }
+
+  h2 {
+    font-size: 1.2rem;
+  }
+
+  nav {
+    gap: 10px;
+    padding: 12px;
+  }
+
+  button {
+    padding: 10px 14px;
+    font-size: 0.9rem;
+  }
+
+  .retro-panel {
+    padding: 15px;
+  }
+}
+
