@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1c1c1d">
+<title>RE-WIND | Music Lives On</title>
+<style>
+:root{--ink:#18191b;--ink2:#26272a;--red:#e32740;--rose:#fde9ec;--paper:#fff;--gray:#777b83;--line:#e7e8e9;--soft:#f6f6f6;--muted:#9ca0a5;--radius:14px;--shadow:0 10px 28px rgba(15,16,18,.045)}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--paper);color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+button,input,select{font:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #e3274088;outline-offset:3px}
+button:disabled{cursor:not-allowed;opacity:.35}
+[hidden]{display:none!important}
+/* The main navigation is shared by all three screens. */
+.header{height:87px;background:#1b1b1d;color:white;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:18px;padding:0 clamp(17px,2vw,37px);position:relative;z-index:30}
+.brand{display:flex;align-items:center;gap:17px;min-width:0;white-space:nowrap}
+.record-logo{width:59px;height:59px;border:2px solid white;border-radius:50%;position:relative;flex:none}
+.record-logo:before,.record-logo:after{content:"";position:absolute;border:2px solid #fff;border-radius:50%}
+.record-logo:before{inset:8px}.record-logo:after{inset:19px}
+.wordmark{display:block;font-size:clamp(22px,2.55vw,40px);font-weight:900;letter-spacing:-.9px;line-height:.89}
+.tagline{display:block;font-size:clamp(7px,.65vw,11px);letter-spacing:clamp(2px,.3vw,5px);padding-left:4px;margin-top:9px;font-weight:600}
+.nav{display:flex;align-items:center;gap:clamp(1px,.7vw,12px);justify-self:center}
+.navtab,.toparrow{height:46px;color:#f8f8f8;background:transparent;border:0;font-size:14px;letter-spacing:.04em;font-weight:600}
+.navtab{min-width:clamp(83px,11.3vw,200px);padding:0 15px;position:relative;border-radius:10px}
+.navtab.active{background:linear-gradient(180deg,#2e2e30,#272023)}
+.navtab.active:after{content:"";width:56px;height:2px;position:absolute;bottom:0;left:50%;transform:translateX(-50%);background:var(--red)}
+.toparrow{width:36px;font-size:33px;font-weight:300;line-height:1}
+.navtab:hover,.toparrow:hover:not(:disabled){background-color:#333437}
+.header-icons{display:flex;align-items:center;gap:18px;justify-self:end}
+.header-icons button{width:37px;height:37px;display:grid;place-items:center;background:transparent;color:white;border:0;padding:0;font-size:29px}
+.header-icons button:hover{opacity:.75}
+/* Sliding windows */
+.viewport{overflow:hidden;width:100%;height:calc(100vh - 87px);min-height:610px}
+.track{width:300%;height:100%;display:flex;transform:translateX(-33.333333%);transition:transform .46s cubic-bezier(.2,.77,.2,1)}
+.window{width:33.333333%;flex:none;min-width:0;height:100%;overflow-y:auto;background:#fff;position:relative}
+.section-pad{width:min(100%,1720px);margin:auto;padding:clamp(18px,2.8vw,46px)}
+/* Player */
+.player-layout{display:grid;grid-template-columns:minmax(0,2.2fr) minmax(280px,.94fr);column-gap:clamp(15px,2vw,42px);align-items:center;min-height:calc(100vh - 87px);padding-top:35px;padding-bottom:40px}
+.deck-area{min-width:0;position:relative}
+.device{position:relative;width:100%;max-width:1090px;margin:auto}
+.device-art{display:block;width:100%;height:auto;user-select:none;pointer-events:none}
+.deck-hit{position:absolute;top:20%;height:15%;width:7.3%;border:0;background:transparent;border-radius:9px;z-index:3;padding:0;color:transparent}
+.deck-hit:hover{background:rgba(255,255,255,.07);box-shadow:0 0 0 1px rgba(255,255,255,.15) inset}
+.deck-hit:active{background:rgba(0,0,0,.17)}
+.deck-hit.rewind{left:31.5%}.deck-hit.play{left:39.9%}.deck-hit.stop{left:48.2%}.deck-hit.eject{left:56.4%}.deck-hit.forward{left:64.9%}
+.volume-control{position:absolute;left:10.1%;top:16.3%;height:16%;width:8%;border:0;background:transparent;z-index:3;border-radius:50%}
+.volume-control:hover{box-shadow:0 0 0 2px #d8d8d8aa}
+.tape-title{position:absolute;left:39.2%;top:53.9%;width:23.8%;height:8%;display:flex;align-items:center;justify-content:center;text-align:center;font:italic clamp(9px,1.7vw,24px)/1 "Segoe Script",cursive;color:#282329;background:#f4eee3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
+.reel{position:absolute;top:64.4%;width:4.8%;aspect-ratio:1;border:2px dashed #d0d0d0;border-radius:50%;opacity:0;pointer-events:none}
+.reel.left{left:41.7%}.reel.right{left:55.8%}
+.window.is-playing .reel{opacity:.85;animation:spool 1.1s linear infinite}
+@keyframes spool{to{transform:rotate(360deg)}}
+.deck-ejected{position:absolute;top:53.3%;left:34.1%;width:33%;height:24%;display:flex;align-items:center;justify-content:center;background:#191b20;color:#dadbdd;border:3px solid #43464b;border-radius:4px;font-size:clamp(10px,1.2vw,19px);letter-spacing:.13em;z-index:2;box-shadow:inset 0 0 15px #0008}
+.playback-caption{min-height:30px;text-align:center;margin:5px auto 0;color:#868a90;font-size:12px;letter-spacing:.05em}
+.playback-caption strong{color:#26272b}
+/* Physical cassette stack, aligned, on right */
+.queue-card{background:#fff;border:1px solid #f0f0f0;border-radius:20px;box-shadow:0 11px 28px rgba(18,18,18,.065);padding:clamp(17px,1.9vw,30px);width:100%;max-width:470px;margin:auto}
+.queue-heading{display:flex;align-items:center;justify-content:space-between;gap:6px;padding-bottom:18px;border-bottom:1px solid #e1e3e4}
+.queue-heading strong{font-size:clamp(16px,1.25vw,22px);letter-spacing:.17em}
+.queue-heading span{font-size:12px;color:#adb0b7;letter-spacing:.09em}
+.cassette-stack{display:flex;flex-direction:column;gap:2px;padding:24px 0 21px;min-height:229px;justify-content:center;align-items:center}
+.cassette-case{width:min(100%,370px);height:clamp(49px,4.6vw,70px);position:relative;display:flex;align-items:center;background:#30363a;border:3px solid #c9cdd1;border-radius:4px;box-shadow:0 4px 0 #82868c,0 8px 12px #1012141a,inset 0 0 0 3px #e5e6e750;overflow:hidden;transform:translateY(0);transition:transform .18s,box-shadow .18s}
+.cassette-case:hover{transform:translateY(-4px);z-index:4;box-shadow:0 8px 0 #82868c,0 14px 17px #10121433}
+.cassette-case .spine-image{position:absolute;inset:0;background-size:cover;background-position:center;filter:brightness(.52) saturate(.6)}
+.cassette-case:nth-child(2n) .spine-image{filter:brightness(.6) saturate(.45)}
+.cassette-case strong,.cassette-case small{z-index:1;position:relative;color:#fff;text-shadow:0 1px 4px #000b}
+.cassette-case strong{margin-left:17px;font-size:clamp(11px,1.04vw,16px);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:75%}
+.cassette-case small{margin-left:auto;margin-right:12px;font-size:11px;letter-spacing:.05em}
+.queue-items{display:flex;flex-direction:column;gap:3px}
+.queue-item{display:grid;grid-template-columns:30px minmax(0,1fr) 35px;align-items:center;gap:10px;background:transparent;border:0;border-radius:8px;text-align:left;min-height:42px;padding:6px 9px;font-size:clamp(12px,1vw,15px);width:100%;color:#202124}
+.queue-item:hover{background:#f4f4f5}.queue-item.active{background:#fce9eb}
+.queue-item .number{color:#898c93;position:relative}
+.queue-item.active .number{color:var(--red);font-weight:800}
+.queue-item .title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
+.queue-item .tape-label{text-align:right;color:#8c9097;font-size:12px}
+.queue-empty{font-size:13px;color:#868a90;text-align:center;padding:20px}
+/* Library */
+.library-screen{display:flex;flex-direction:column;gap:11px;min-height:100%;padding-top:8px}
+.library-toolbar{display:flex;align-items:center;justify-content:flex-end;min-height:48px}
+.btn{height:43px;padding:0 19px;border:1px solid #dfe0e3;border-radius:8px;background:#fff;color:#202125;font-weight:600;font-size:14px;display:inline-flex;align-items:center;gap:10px;justify-content:center;transition:background .15s,transform .15s}
+.btn:hover{background:#f7f7f7}.btn:active{transform:scale(.98)}
+.btn-dark{background:#242527;color:white;border-color:#242527}.btn-dark:hover{background:#383a3d}
+.btn .plus{font-size:26px;font-weight:300;line-height:0}
+.library-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:17px 16px}
+.album-card{background:#fff;border:1px solid #f0f0f0;border-radius:12px;box-shadow:0 6px 15px #00000008;padding:12px 12px 13px;min-width:0;position:relative;transition:transform .19s,box-shadow .19s}
+.album-card:hover{transform:translateY(-9px);box-shadow:0 16px 29px #00000012}
+.album-art-btn{width:100%;border:0;background:transparent;padding:0;display:block;text-align:left}
+.album-cover{display:block;width:100%;max-width:306px;margin:0 auto;height:auto;aspect-ratio:1.21;object-fit:fill;box-shadow:0 1px 3px #00000018;border:1px solid #dadde0}
+.album-meta{display:flex;align-items:center;gap:6px;justify-content:space-between;margin-top:11px}
+.album-text{min-width:0}.album-text strong{font-size:clamp(12px,1.16vw,17px);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.album-text small{display:block;font-size:11px;letter-spacing:.26em;color:#9699a0;margin-top:6px}
+.album-more{flex:none;border:0;background:transparent;border-radius:5px;font-size:20px;line-height:1;width:31px;height:35px}
+.album-more:hover{background:#f0f0f0}
+.library-bottom{display:flex;align-items:center;gap:18px;border:1px solid #f0f0f0;border-radius:14px;box-shadow:0 4px 12px #00000008;padding:10px 15px;margin-top:auto;min-height:55px}
+.search-field{flex:1;min-width:0;display:flex;align-items:center;gap:13px}.search-field input{border:0;outline:none;min-width:0;width:100%;height:36px;color:#34363b;background:transparent;font-size:13px}
+.search-field input::placeholder{color:#a4a8af;font-style:italic}
+.search-icon{font-size:22px;color:#686d76}
+.library-counter{color:#92969e;letter-spacing:.13em;font-size:12px;white-space:nowrap}
+.library-bottom .divider{width:1px;background:#e7e8eb;height:25px;flex:none}
+.view-toggle{display:flex;gap:5px}
+.view-toggle button{border:0;background:transparent;color:#676b72;font-size:22px;width:37px;height:33px;border-radius:5px}
+.view-toggle button.active{color:var(--red)}
+.sort-label{color:#797c83;font-size:12px;white-space:nowrap}
+.sort-select{border:0;background:transparent;padding:8px;font-size:12px;color:#37393f}
+.library-grid.list-mode{grid-template-columns:1fr 1fr}
+.list-mode .album-card{display:grid;grid-template-columns:110px minmax(0,1fr);align-items:center;gap:15px}
+.list-mode .album-meta{margin:0}
+/* Unchanged settings image with accessible interactive hit targets. */
+.settings-screen{padding-top:44px}
+.settings-visual{position:relative;width:min(100%,1580px);margin:auto}
+.settings-visual img{width:100%;display:block;height:auto;pointer-events:none;user-select:none}
+.settings-hotspot{position:absolute;border:0;border-radius:50%;background:transparent;cursor:pointer}
+.settings-hotspot:hover{box-shadow:0 0 0 3px rgba(227,39,64,.2)}
+.settings-message{color:#7f838b;font-size:13px;text-align:center;padding-top:14px;min-height:36px}
+/* Import modal */
+.modal-scrim{position:fixed;inset:0;background:#14171b3e;backdrop-filter:blur(2px);z-index:90;display:flex;align-items:center;justify-content:center;padding:18px;overflow:auto}
+.modal{width:min(100%,535px);max-height:calc(100vh - 36px);overflow-y:auto;background:white;border-radius:17px;box-shadow:0 25px 75px #00000033;padding:30px 31px 25px}
+.modal-title{display:flex;justify-content:space-between;align-items:start;gap:15px}.modal-title h2{margin:0 0 25px;font-size:25px}.modal-close{border:0;background:transparent;font-size:30px;color:#777b82;line-height:1;padding:0 4px}
+.form-heading{font-size:15px;font-weight:700;margin:0 0 10px}
+.upload-box{border:1px dashed #dadde1;border-radius:10px;padding:14px;display:flex;align-items:center;gap:18px}
+.cover-preview{width:92px;height:76px;border-radius:7px;background:#f2f2f3;display:grid;place-items:center;font-size:30px;color:#8a8e94;overflow:hidden;flex:none}
+.cover-preview img{display:block;width:100%;height:100%;object-fit:cover}
+.upload-info{min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:8px}
+.upload-info small{color:#9599a0;font-size:11px}
+.modal-rule{border:0;border-top:1px solid #e9e9eb;margin:17px 0}
+.form-subtitle{font-size:12px;color:#92969e;margin:0 0 10px}
+.track-rows{display:flex;flex-direction:column;gap:8px}
+.track-entry{border:1px solid #e5e6e8;border-radius:10px;padding:10px;display:grid;grid-template-columns:minmax(0,1.04fr) minmax(0,.94fr) auto;gap:10px;align-items:center}
+.file-picker{min-width:0;display:flex;align-items:center;gap:9px;padding:8px;border:1px solid #e4e5e7;border-radius:7px;background:white;text-align:left;width:100%;height:61px}
+.file-picker:hover{background:#f7f7f8}.file-note{width:35px;height:39px;flex:none;border-radius:5px;background:#f2f3f4;display:grid;place-items:center;color:#767a82;font-size:23px}
+.file-name{display:block;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:135px}
+.file-types{font-size:9px;color:#8d929b;display:block;margin-top:4px}
+.name-box{display:flex;flex-direction:column;gap:5px;min-width:0}.name-box label{font-size:11px;color:#787d86}.name-box input{width:100%;min-width:0;padding:10px;border:1px solid #dbdee2;border-radius:6px;font-size:12px;height:37px}
+.remove-track{width:25px;height:28px;border:0;background:transparent;color:#a3a6ab;font-size:22px;border-radius:4px}
+.remove-track:hover{background:#f4e6e7;color:#a90022}
+.add-track{margin-top:11px;height:37px;font-size:12px}.helper{font-size:11px;color:#969aa2;margin:8px 0 0}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:17px;border-top:1px solid #ececee;padding-top:17px}
+.modal-error{color:#c11832;font-size:12px;margin:10px 0 0;min-height:14px}
+/* Toast and compact track context menu */
+.toast{position:fixed;bottom:25px;left:50%;transform:translate(-50%,20px);opacity:0;transition:.22s;pointer-events:none;z-index:110;color:white;background:#222529;border-radius:9px;padding:12px 18px;box-shadow:0 10px 24px #0003;font-size:13px;max-width:min(90vw,500px);text-align:center}
+.toast.visible{opacity:1;transform:translate(-50%,0)}
+.context-menu{position:fixed;z-index:70;width:190px;background:#fff;border:1px solid #dddfe3;border-radius:9px;padding:6px;box-shadow:0 12px 32px #0002}
+.context-menu button{width:100%;border:0;background:transparent;text-align:left;font-size:13px;color:#242529;padding:9px 11px;border-radius:5px}
+.context-menu button:hover{background:#f3f3f3}
+@media(max-width:1100px){.header{grid-template-columns:auto 1fr auto}.brand{gap:8px}.record-logo{width:43px;height:43px}.record-logo:before{inset:6px}.record-logo:after{inset:14px}.navtab{min-width:86px}.player-layout{grid-template-columns:minmax(0,1.7fr) minmax(240px,.9fr)}.library-grid{gap:12px}.album-card{padding:8px}}
+@media(max-width:760px){.header{height:115px;grid-template-columns:1fr auto;grid-template-rows:48px 49px;padding:7px 14px}.brand{grid-column:1}.header-icons{grid-column:2}.nav{grid-row:2;grid-column:1 / -1;justify-self:center}.navtab{min-width:73px;height:41px;font-size:12px;padding:0 6px}.toparrow{width:29px;font-size:27px}.viewport{height:calc(100vh - 115px)}.player-layout{grid-template-columns:1fr;min-height:unset;row-gap:10px;padding-top:30px}.deck-area{max-width:760px}.queue-card{max-width:560px}.library-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.library-screen{gap:14px}.library-bottom{flex-wrap:wrap}.search-field{flex-basis:100%}.settings-screen{padding-top:35px}.section-pad{padding:16px}}
+@media(max-width:480px){.wordmark{font-size:24px}.tagline{font-size:7px;letter-spacing:2px}.header-icons{gap:5px}.header-icons button{width:31px;font-size:23px}.library-grid{gap:8px}.album-card{padding:7px}.album-text strong{font-size:12px}.queue-heading strong{font-size:15px}.track-entry{grid-template-columns:1fr 1fr;gap:7px}.remove-track{grid-column:2;justify-self:end;margin-top:-12px}.modal{padding:18px}.upload-box{gap:9px;padding:8px}.cover-preview{width:67px;height:66px}.btn{padding:0 10px}.modal-title h2{font-size:22px}.navtab{min-width:64px}}
+@media(prefers-reduced-motion:reduce){.track,.album-card,.cassette-case,.toast,.reel{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="brand" aria-label="RE-WIND, Music Lives On"><span class="record-logo" aria-hidden="true"></span><div><strong class="wordmark">RE-WIND</strong><small class="tagline">MUSIC LIVES ON</small></div></div>
+  <nav class="nav" aria-label="Main navigation">
+    <button class="toparrow" id="navPrev" aria-label="Previous window">‹</button>
+    <button class="navtab" data-window="0">SETTINGS</button>
+    <button class="navtab active" data-window="1">PLAYER</button>
+    <button class="navtab" data-window="2">LIBRARY</button>
+    <button class="toparrow" id="navNext" aria-label="Next window">›</button>
+  </nav>
+  <div class="header-icons"><button aria-label="Settings" title="Settings" id="gearBtn">⚙</button><button aria-label="About RE-WIND" title="About RE-WIND" id="aboutBtn">◉</button></div>
+</header>
+<main class="viewport"><div class="track" id="track">
+  <!-- WINDOW 1: SETTINGS (left) -->
+  <section class="window" id="settingsWindow" aria-label="Settings window">
+    <div class="section-pad settings-screen">
+      <div class="settings-visual" id="settingsVisual">
+        <img src="assets/settings-controls.webp" alt="Tape Warmth, Audio Warp, Lo-fi Bit Depth, Wow and Flutter, Noise, and Output Tone control panels">
+      </div>
+      <div id="settingsMessage" class="settings-message" aria-live="polite">Audio effects are visual controls for now; connect Member 5's effects engine later.</div>
+    </div>
+  </section>
+  <!-- WINDOW 2: PLAYER (opens first) -->
+  <section class="window" id="playerWindow" aria-label="Player window">
+    <div class="section-pad player-layout">
+      <div class="deck-area">
+        <div class="device" id="cassetteDevice">
+          <img src="assets/cassette-player.webp" alt="Black RE-WIND cassette stereo with volume knob, rewind, play, stop, eject, fast forward, twin speakers, and a cassette deck" class="device-art">
+          <button class="volume-control" title="Adjust volume" aria-label="Increase volume" id="volumeBtn"></button>
+          <button class="deck-hit rewind" id="rewButton" aria-label="Rewind ten seconds" title="Rewind"></button>
+          <button class="deck-hit play" id="playButton" aria-label="Play or pause" title="Play / Pause"></button>
+          <button class="deck-hit stop" id="stopButton" aria-label="Stop" title="Stop"></button>
+          <button class="deck-hit eject" id="ejectButton" aria-label="Eject cassette" title="Eject"></button>
+          <button class="deck-hit forward" id="forwardButton" aria-label="Forward ten seconds" title="Fast forward"></button>
+          <div class="tape-title" id="tapeLabel" aria-hidden="true">Mix Tape</div>
+          <div class="reel left" aria-hidden="true"></div><div class="reel right" aria-hidden="true"></div>
+          <div class="deck-ejected" id="ejectedVisual" hidden>NO TAPE INSERTED</div>
+        </div>
+        <div class="playback-caption" id="playbackStatus" aria-live="polite"><strong>Mix Tape</strong> · select a cassette to load it</div>
+      </div>
+      <aside class="queue-card" aria-label="Up next cassette queue">
+        <div class="queue-heading"><strong>UP NEXT</strong><span id="queueCount">04 TRACKS</span></div>
+        <div class="cassette-stack" id="cassetteStack"></div>
+        <div class="queue-items" id="queueItems"></div>
+      </aside>
+    </div>
+  </section>
+  <!-- WINDOW 3: LIBRARY (right) -->
+  <section class="window" id="libraryWindow" aria-label="Music library window">
+    <div class="section-pad library-screen">
+      <div class="library-toolbar"><button class="btn btn-dark" id="importBtn"><span class="plus">+</span> IMPORT</button></div>
+      <div class="library-grid" id="libraryGrid"></div>
+      <footer class="library-bottom">
+        <div class="search-field"><span class="search-icon" aria-hidden="true">⌕</span><input id="searchInput" aria-label="Search library" placeholder="Search albums, artists, or tags..."></div>
+        <span class="library-counter" id="libraryCount">08 ALBUMS</span><span class="divider"></span>
+        <div class="view-toggle"><button id="gridView" class="active" aria-label="Grid view">▦</button><button id="listView" aria-label="List view">☰</button></div><span class="divider"></span>
+        <span class="sort-label">SORT</span><select class="sort-select" id="sortSelect" aria-label="Sort library"><option value="custom">DEFAULT</option><option value="az">A–Z</option><option value="za">Z–A</option><option value="recent">NEWEST</option></select>
+      </footer>
+    </div>
+  </section>
+</div></main>
+<!-- Track-by-track import dialog -->
+<div class="modal-scrim" id="modalScrim" hidden>
+  <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalHeading">
+    <div class="modal-title"><h2 id="modalHeading">Import Music</h2><button class="modal-close" id="modalClose" aria-label="Close import dialog">×</button></div>
+    <h3 class="form-heading">Upload Cover Art</h3>
+    <div class="upload-box"><div class="cover-preview" id="coverPreview" aria-label="Cover art preview">▧</div><div class="upload-info"><button class="btn" id="chooseCover" type="button">▧ &nbsp; Choose Cover Image</button><small>JPG, PNG, WebP (square recommended)</small></div></div>
+    <input type="file" id="coverFile" accept="image/*" hidden>
+    <hr class="modal-rule">
+    <h3 class="form-heading">Tracks</h3><p class="form-subtitle">Add one or more song files for this release.</p>
+    <div class="track-rows" id="trackRows"></div>
+    <button class="btn add-track" id="addTrackBtn" type="button">＋ Add Another Track</button>
+    <p class="helper">Each uploaded track has its own song name. Add more tracks for an album.</p>
+    <p class="modal-error" id="importError" role="alert"></p>
+    <div class="modal-actions"><button class="btn" id="cancelImport">Cancel</button><button class="btn btn-dark" id="confirmImport">Add to Library</button></div>
+  </section>
+</div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<div id="contextMenu" class="context-menu" hidden></div>
+<audio id="audioPlayer" preload="metadata"></audio>
+<script>
+(() => {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const pad = n => String(n).padStart(2,'0');
+  const demo = [
+    {title:'North Lights',artist:'Demo tape',cover:'assets/case-01.webp'},
+    {title:'Petal Static',artist:'Demo tape',cover:'assets/case-02.webp'},
+    {title:'Orbital Drift',artist:'Demo tape',cover:'assets/case-03.webp'},
+    {title:'Midnight Lanes',artist:'Demo tape',cover:'assets/case-04.webp'},
+    {title:'Tides',artist:'Demo tape',cover:'assets/case-05.webp'},
+    {title:'Fracture Plans',artist:'Demo tape',cover:'assets/case-06.webp'},
+    {title:'Slow Rooms',artist:'Demo tape',cover:'assets/case-07.webp'},
+    {title:'Vacant Frequencies',artist:'Demo tape',cover:'assets/case-08.webp'}
+  ].map((item,index) => ({...item,id:'demo-'+index,source:null,demo:true,created:index}));
+  let library=[...demo],queue=demo.slice(0,4).map(x=>x.id),activeId='demo-1',windowIndex=1,playing=false,volume=.7,toastTimeout;
+  const audio=$('audioPlayer');audio.volume=volume;
+  function item(id){return library.find(t=>t.id===id)}
+  function emit(event,detail={}){document.dispatchEvent(new CustomEvent('rewind:'+event,{detail}))}
+  function toast(message){const el=$('toast');el.textContent=message;el.classList.add('visible');clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>el.classList.remove('visible'),2800)}
+  function navigate(n){windowIndex=Math.max(0,Math.min(2,n));$('track').style.transform=`translateX(-${windowIndex*100/3}%)`;document.querySelectorAll('.navtab').forEach((b,i)=>b.classList.toggle('active',i===windowIndex));$('navPrev').disabled=windowIndex===0;$('navNext').disabled=windowIndex===2;emit('navigate',{screen:['settings','player','library'][windowIndex]})}
+  $('navPrev').onclick=()=>navigate(windowIndex-1);$('navNext').onclick=()=>navigate(windowIndex+1);
+  document.querySelectorAll('.navtab').forEach((b,i)=>b.onclick=()=>navigate(i));
+  $('gearBtn').onclick=()=>navigate(0);$('aboutBtn').onclick=()=>toast('RE-WIND — Music Lives On · Visual prototype');
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('modalScrim').hidden)closeModal();hideMenu();return}if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)||!$('modalScrim').hidden)return;if(e.key==='ArrowLeft'){e.preventDefault();navigate(windowIndex-1)}if(e.key==='ArrowRight'){e.preventDefault();navigate(windowIndex+1)}});
+  function renderQueue(){
+    const available=queue.map(id=>item(id)).filter(Boolean);
+    $('queueCount').textContent=pad(available.length)+' TRACKS';
+    const stack=$('cassetteStack'),lines=$('queueItems');stack.replaceChildren();lines.replaceChildren();
+    if(!available.length){const empty=document.createElement('p');empty.className='queue-empty';empty.textContent='Add songs from your Library';stack.append(empty);return}
+    available.slice(0,4).forEach(track=>{
+      const tape=document.createElement('div');tape.className='cassette-case';tape.title=track.title;
+      const art=document.createElement('div');art.className='spine-image';art.style.backgroundImage=`url(${JSON.stringify(track.cover)})`;
+      const title=document.createElement('strong');title.textContent=track.title;
+      const label=document.createElement('small');label.textContent='TAPE';
+      tape.append(art,title,label);stack.append(tape);
+    });
+    available.forEach((track,i)=>{
+      const row=document.createElement('button');row.type='button';row.className='queue-item'+(track.id===activeId?' active':'');row.title='Load '+track.title;
+      const n=document.createElement('span');n.className='number';n.textContent=pad(i+1);
+      const t=document.createElement('span');t.className='title';t.textContent=track.title;
+      const r=document.createElement('span');r.className='tape-label';r.textContent='TAPE';
+      row.append(n,t,r);row.onclick=()=>loadTrack(track.id);lines.append(row);
+    });
+  }
+  function renderLibrary(){
+    const query=$('searchInput').value.trim().toLowerCase();let shown=library.filter(x=>(x.title+' '+x.artist).toLowerCase().includes(query));
+    if($('sortSelect').value==='az')shown.sort((a,b)=>a.title.localeCompare(b.title));
+    if($('sortSelect').value==='za')shown.sort((a,b)=>b.title.localeCompare(a.title));
+    if($('sortSelect').value==='recent')shown.sort((a,b)=>b.created-a.created);
+    const grid=$('libraryGrid');grid.replaceChildren();
+    shown.forEach(track=>{
+      const card=document.createElement('article');card.className='album-card';
+      const select=document.createElement('button');select.className='album-art-btn';select.type='button';select.title='Add '+track.title+' to queue';select.setAttribute('aria-label','Add '+track.title+' to queue');
+      const cover=document.createElement('img');cover.className='album-cover';cover.src=track.cover;cover.alt=track.title+' album artwork';select.append(cover);
+      select.onclick=()=>{queue.push(track.id);renderQueue();toast(track.title+' added to queue');emit('queue-change',{ids:[...queue]})};
+      const info=document.createElement('div');info.className='album-meta';
+      const texts=document.createElement('div');texts.className='album-text';const title=document.createElement('strong');title.textContent=track.title;const caption=document.createElement('small');caption.textContent='TAPE';texts.append(title,caption);
+      const more=document.createElement('button');more.className='album-more';more.textContent='⋮';more.setAttribute('aria-label','More actions for '+track.title);more.onclick=e=>{e.stopPropagation();showMenu(e.currentTarget,track)};
+      info.append(texts,more);card.append(select,info);grid.append(card);
+    });
+    $('libraryCount').textContent=pad(library.length)+' '+(library.length===1?'ALBUM':'ALBUMS');
+  }
+  function showMenu(button,track){const menu=$('contextMenu');menu.replaceChildren();
+    function action(label,run){const b=document.createElement('button');b.textContent=label;b.onclick=()=>{hideMenu();run()};menu.append(b)}
+    action('Add to queue',()=>{queue.push(track.id);renderQueue();toast(track.title+' added to queue')});
+    action('Load in Player',()=>{if(!queue.includes(track.id))queue.push(track.id);loadTrack(track.id);navigate(1)});
+    action('Remove from queue',()=>{const ix=queue.indexOf(track.id);if(ix>=0){queue.splice(ix,1);if(activeId===track.id)stop();renderQueue();toast('Removed from queue')}});
+    if(!track.demo)action('Remove imported track',()=>{library=library.filter(t=>t.id!==track.id);queue=queue.filter(id=>id!==track.id);if(track.source)URL.revokeObjectURL(track.source);if(activeId===track.id){stop();activeId=null}renderQueue();renderLibrary();toast('Track removed')});
+    const rect=button.getBoundingClientRect();menu.hidden=false;menu.style.top=Math.min(rect.bottom+7,innerHeight-180)+'px';menu.style.left=Math.max(8,Math.min(rect.left-154,innerWidth-201))+'px';
+  }
+  function hideMenu(){$('contextMenu').hidden=true}
+  document.addEventListener('click',e=>{if(!$('contextMenu').contains(e.target)&&!e.target.closest('.album-more'))hideMenu()});
+  $('searchInput').addEventListener('input',renderLibrary);$('sortSelect').addEventListener('change',renderLibrary);
+  $('gridView').onclick=()=>{$('libraryGrid').classList.remove('list-mode');$('gridView').classList.add('active');$('listView').classList.remove('active')};
+  $('listView').onclick=()=>{$('libraryGrid').classList.add('list-mode');$('listView').classList.add('active');$('gridView').classList.remove('active')};
+  function refreshDeck(){const track=item(activeId);$('tapeLabel').textContent=track?track.title:'Mix Tape';$('ejectedVisual').hidden=!!track;$('playerWindow').classList.toggle('is-playing',playing);$('playbackStatus').innerHTML='';const strong=document.createElement('strong');strong.textContent=track?track.title:'Empty deck';$('playbackStatus').append(strong,document.createTextNode(playing?' · playing':' · '+(track?.source?'ready':'visual demo · import an audio file to play')));renderQueue()}
+  function loadTrack(id){stop();activeId=id;const track=item(id);if(track?.source){audio.src=track.source;audio.load()}else audio.removeAttribute('src');refreshDeck();emit('load',{track});toast(track?.title+' loaded into player')}
+  async function play(){const track=item(activeId);if(!track){toast('Load a cassette from the queue first');return}if(!track.source){toast('This is demo artwork. Import an audio file to hear playback.');emit('play',{track,hasAudio:false});return}try{await audio.play();playing=true;refreshDeck();emit('play',{track,hasAudio:true})}catch{toast('Could not play this audio file. Try another format.')}}
+  function pause(){audio.pause();playing=false;refreshDeck();emit('pause',{track:item(activeId)})}
+  function stop(){audio.pause();if(Number.isFinite(audio.duration)&&audio.duration>0)audio.currentTime=0;playing=false;refreshDeck();emit('stop',{})}
+  $('playButton').onclick=()=>playing?pause():play();$('stopButton').onclick=()=>{stop();toast('Stopped')};
+  $('rewButton').onclick=()=>{if(audio.src)audio.currentTime=Math.max(0,audio.currentTime-10);toast('Rewind ◀◀');emit('rewind',{seconds:10})};
+  $('forwardButton').onclick=()=>{if(audio.src&&Number.isFinite(audio.duration))audio.currentTime=Math.min(audio.duration,audio.currentTime+10);toast('Fast forward ▶▶');emit('forward',{seconds:10})};
+  $('ejectButton').onclick=()=>{stop();activeId=null;audio.removeAttribute('src');audio.load();refreshDeck();toast('Tape ejected');emit('eject',{})};
+  $('volumeBtn').onclick=()=>{volume=volume>=1?.2:Math.min(1,Math.round((volume+.2)*10)/10);audio.volume=volume;toast('Volume '+Math.round(volume*100)+'%');emit('volume',{value:volume})};
+  audio.onended=()=>{playing=false;const idx=queue.indexOf(activeId);if(idx>=0&&idx+1<queue.length){loadTrack(queue[idx+1]);if(item(activeId)?.source)play()}else refreshDeck()};
+  // Settings screenshot uses click-target overlays, without re-drawing your approved console.
+  const settingsControls=[['Tape warmth',7.8,29,10,24],['Audio warp',42,29,10,24],['Lo-fi / bit depth',75,29,10,24],['Wow',7.8,79,10,22],['Flutter',24,79,10,22],['Tape hiss',42,78,9,18],['Vinyl noise',51,78,9,18],['Hum',60,78,9,18],['Bass',72,78,8,18],['Mid',83,78,8,18],['Treble',93,78,8,18]];
+  const values={};settingsControls.forEach(([name,x,y,w,h])=>{const button=document.createElement('button');button.className='settings-hotspot';button.style.left=(x-w/2)+'%';button.style.top=(y-h/2)+'%';button.style.width=w+'%';button.style.height=h+'%';button.title='Adjust '+name;button.setAttribute('aria-label','Adjust '+name);button.onclick=()=>{values[name]=((values[name]||0)+1)%6;$('settingsMessage').textContent=name+': setting '+values[name]+'/5 (visual only)';emit('setting-change',{name,value:values[name]/5})};$('settingsVisual').append(button)});
+  // Import dialog: each audio file sits directly beside its own editable song name.
+  let coverUrl=null,trackRowId=0,returnFocus=null;
+  function openModal(){hideMenu();returnFocus=document.activeElement;$('modalScrim').hidden=false;document.body.style.overflow='hidden';$('importError').textContent='';$('trackRows').replaceChildren();$('coverFile').value='';if(coverUrl)URL.revokeObjectURL(coverUrl);coverUrl=null;$('coverPreview').textContent='▧';addRow();addRow();addRow();$('modalClose').focus()}
+  function closeModal(){if(coverUrl){URL.revokeObjectURL(coverUrl);coverUrl=null}$('modalScrim').hidden=true;document.body.style.overflow='';if(returnFocus?.focus)returnFocus.focus()}
+  function addRow(){trackRowId++;const row=document.createElement('div');row.className='track-entry';row.dataset.row=String(trackRowId);
+    const input=document.createElement('input');input.type='file';input.accept='audio/*,.mp3,.wav,.flac,.m4a,.ogg';input.hidden=true;
+    const picker=document.createElement('button');picker.className='file-picker';picker.type='button';picker.setAttribute('aria-label','Choose song file for track '+trackRowId);picker.innerHTML='<span class="file-note">♫</span><span style="min-width:0"><span class="file-name">Choose song file</span><span class="file-types">MP3, WAV, FLAC, M4A</span></span>';picker.onclick=()=>input.click();
+    const labelBox=document.createElement('div');labelBox.className='name-box';const label=document.createElement('label');label.textContent='Song name';const name=document.createElement('input');name.type='text';name.placeholder='Song name';name.maxLength=110;labelBox.append(label,name);
+    const remove=document.createElement('button');remove.type='button';remove.className='remove-track';remove.textContent='×';remove.title='Remove this row';remove.setAttribute('aria-label','Remove this track row');remove.onclick=()=>{if($('trackRows').children.length>1)row.remove();else{input.value='';name.value='';picker.querySelector('.file-name').textContent='Choose song file'}};
+    input.onchange=()=>{const file=input.files[0];if(file){picker.querySelector('.file-name').textContent=file.name;if(!name.value.trim())name.value=file.name.replace(/\.[^.]+$/,'').replace(/[_-]/g,' ')}else picker.querySelector('.file-name').textContent='Choose song file'};
+    row.append(picker,labelBox,remove,input);$('trackRows').append(row);
+  }
+  $('importBtn').onclick=openModal;$('modalClose').onclick=closeModal;$('cancelImport').onclick=closeModal;$('addTrackBtn').onclick=addRow;
+  $('modalScrim').addEventListener('mousedown',e=>{if(e.target===$('modalScrim'))closeModal()});
+  $('chooseCover').onclick=()=>$('coverFile').click();
+  $('coverFile').onchange=()=>{const file=$('coverFile').files[0];if(!file)return;if(coverUrl)URL.revokeObjectURL(coverUrl);coverUrl=URL.createObjectURL(file);const image=document.createElement('img');image.alt='Selected cover preview';image.src=coverUrl;$('coverPreview').replaceChildren(image)};
+  $('confirmImport').onclick=()=>{
+    $('importError').textContent='';const rows=[...$('trackRows').children];const entries=[];
+    for(const row of rows){const f=row.querySelector('input[type=file]').files[0];const n=row.querySelector('input[type=text]').value.trim();if(f){if(!n){$('importError').textContent='Please give every selected audio file a song name.';return}entries.push({file:f,name:n})}}
+    if(!entries.length){$('importError').textContent='Choose at least one audio file to import.';return}
+    const img=coverUrl?URL.createObjectURL($('coverFile').files[0]):null;
+    const imported=entries.map(({file,name},i)=>({id:'user-'+Date.now()+'-'+i,title:name,artist:'My music',cover:img||'assets/case-06.webp',source:URL.createObjectURL(file),demo:false,created:Date.now()+i}));
+    library.push(...imported);renderLibrary();closeModal();navigate(2);toast(imported.length+' track'+(imported.length===1?'':'s')+' added to Library');emit('library-import',{tracks:imported});
+  };
+  // Prevent browser storing dummy data: local uploads only last for this page session.
+  navigate(1);renderQueue();renderLibrary();refreshDeck();
+})();
+</script>
+</body>
+</html>
