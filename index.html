@@ -322,6 +322,9 @@ html[data-theme="dark"] .settings-visual > img{
 .tape-name-field small{font-size:11px;color:#8d9199}
 html[data-theme="dark"] .tape-name-field input{background:#303138;color:#f1ece7;border-color:#50515b}
 html[data-theme="dark"] .tape-name-field small{color:#bcb6bd}
+.library-empty{grid-column:1 / -1;text-align:center;padding:56px 24px;border:1px dashed #92878d;border-radius:14px}
+.library-empty h2{margin:0 0 12px;font-size:24px}
+.library-empty p{margin:0 0 24px;line-height:1.6}
 </style>
 </head>
 <body>
@@ -366,7 +369,7 @@ html[data-theme="dark"] .tape-name-field small{color:#bcb6bd}
         <div class="player-status-row"><div class="playback-caption" id="playbackStatus" aria-live="polite"><strong>Mix Tape</strong> · select a cassette to load it</div><button class="mute-button" id="muteButton" type="button" aria-label="Mute audio" aria-pressed="false">MUTE</button></div>
       </div>
       <aside class="queue-card" aria-label="Up next cassette queue">
-        <div class="queue-heading"><strong>UP NEXT</strong><span id="queueCount">04 TRACKS</span></div>
+        <div class="queue-heading"><strong>UP NEXT</strong><span id="queueCount">00 TAPES</span></div>
         <div class="cassette-stack" id="cassetteStack"></div>
         <div class="queue-items" id="queueItems"></div>
       </aside>
@@ -379,7 +382,7 @@ html[data-theme="dark"] .tape-name-field small{color:#bcb6bd}
       <div class="library-grid" id="libraryGrid"></div>
       <footer class="library-bottom">
         <div class="search-field"><span class="search-icon" aria-hidden="true">⌕</span><input id="searchInput" aria-label="Search library" placeholder="Search tracks or artists..."></div>
-        <span class="library-counter" id="libraryCount">08 ALBUMS</span><span class="divider"></span>
+        <span class="library-counter" id="libraryCount">00 ALBUMS</span><span class="divider"></span>
         <div class="view-toggle"><button id="gridView" class="active" aria-label="Grid view">▦</button><button id="listView" aria-label="List view">☰</button></div><span class="divider"></span>
         <span class="sort-label">SORT</span><select class="sort-select" id="sortSelect" aria-label="Sort library"><option value="custom">DEFAULT</option><option value="az">A–Z</option><option value="za">Z–A</option><option value="recent">NEWEST</option></select>
       </footer>
@@ -392,7 +395,7 @@ html[data-theme="dark"] .tape-name-field small{color:#bcb6bd}
     <div class="modal-title"><h2 id="modalHeading">Import Music</h2><button class="modal-close" id="modalClose" aria-label="Close import dialog">×</button></div>
     <div class="tape-name-field"><label for="tapeTitle" class="form-heading">Tape / album name</label><input id="tapeTitle" type="text" maxlength="110" placeholder="e.g. My Mixtape" autocomplete="off"><small>All selected songs will appear together on one cassette.</small></div>
     <h3 class="form-heading">Upload Cover Art</h3>
-    <div class="upload-box"><div class="cover-preview" id="coverPreview" aria-label="Cover art preview">▧</div><div class="upload-info"><button class="btn" id="chooseCover" type="button">▧ &nbsp; Choose Cover Image</button><small>JPG, PNG, GIF, WebP (square recommended)</small></div></div>
+    <div class="upload-box"><div class="cover-preview" id="coverPreview" aria-label="Cover art preview">▧</div><div class="upload-info"><button class="btn" id="chooseCover" type="button">▧ &nbsp; Choose Cover Image</button><small>Optional · JPG, PNG, GIF, WebP. Without an upload, a default cover is assigned.</small></div></div>
     <input type="file" id="coverFile" accept="image/*" hidden>
     <hr class="modal-rule">
     <h3 class="form-heading">Tracks</h3><p class="form-subtitle">Add one or more song files for this release.</p>

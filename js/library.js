@@ -3,88 +3,8 @@
 // Member 3: Music Library & Playlist Management
 // =====================================================
 
-const musicLibrary = [
-  {
-    id: 1,
-    title: "North Lights",
-    artist: "North Lights",
-    album: "North Lights",
-    genre: "Synth-pop",
-    duration: "",
-    cover: "./assets/images/case-01.webp",
-    audioUrl: null
-  },
-  {
-    id: 2,
-    title: "Petal Static",
-    artist: "Petal Static",
-    album: "Petal Static",
-    genre: "Dream pop",
-    duration: "",
-    cover: "./assets/images/case-02.webp",
-    audioUrl: null
-  },
-  {
-    id: 3,
-    title: "Orbital Drift",
-    artist: "Orbital Drift",
-    album: "Orbital Drift",
-    genre: "Synth-pop",
-    duration: "",
-    cover: "./assets/images/case-03.webp",
-    audioUrl: null
-  },
-  {
-    id: 4,
-    title: "Midnight Lanes",
-    artist: "Midnight Lanes",
-    album: "Midnight Lanes",
-    genre: "Indie pop",
-    duration: "",
-    cover: "./assets/images/case-04.webp",
-    audioUrl: null
-  },
-  {
-    id: 5,
-    title: "Tides",
-    artist: "Tides",
-    album: "Tides",
-    genre: "Ambient",
-    duration: "",
-    cover: "./assets/images/case-05.webp",
-    audioUrl: null
-  },
-  {
-    id: 6,
-    title: "Fracture Plans",
-    artist: "Fracture Plans",
-    album: "Fracture Plans",
-    genre: "Electronic",
-    duration: "",
-    cover: "./assets/images/case-06.webp",
-    audioUrl: null
-  },
-  {
-    id: 7,
-    title: "Slow Rooms",
-    artist: "Slow Rooms",
-    album: "Slow Rooms",
-    genre: "Lo-fi",
-    duration: "",
-    cover: "./assets/images/case-07.webp",
-    audioUrl: null
-  },
-  {
-    id: 8,
-    title: "Vacant Frequencies",
-    artist: "Vacant Frequencies",
-    album: "Vacant Frequencies",
-    genre: "Synth-pop",
-    duration: "",
-    cover: "./assets/images/case-08.webp",
-    audioUrl: null
-  }
-];
+// Start empty: only imported music belongs in the library.
+const musicLibrary = [];
 
 
 // =====================================================
@@ -377,7 +297,7 @@ function renderAlbums(container, query = "") {
   if (!matches.length) {
     const empty = document.createElement("p");
     empty.className = "empty-library";
-    empty.textContent = "No tapes match that search.";
+    empty.textContent = albums.length ? "No tapes match that search." : "Your library is empty. Import music to add your first tape.";
     container.append(empty);
     return 0;
   }

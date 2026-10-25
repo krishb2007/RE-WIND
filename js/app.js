@@ -2,17 +2,13 @@
   'use strict';
   const $ = id => document.getElementById(id);
   const pad = n => String(n).padStart(2,'0');
-  const demo = [
-    {title:'North Lights',artist:'Demo tape',cover:'assets/images/case-01.webp'},
-    {title:'Petal Static',artist:'Demo tape',cover:'assets/images/case-02.webp'},
-    {title:'Orbital Drift',artist:'Demo tape',cover:'assets/images/case-03.webp'},
-    {title:'Midnight Lanes',artist:'Demo tape',cover:'assets/images/case-04.webp'},
-    {title:'Tides',artist:'Demo tape',cover:'assets/images/case-05.webp'},
-    {title:'Fracture Plans',artist:'Demo tape',cover:'assets/images/case-06.webp'},
-    {title:'Slow Rooms',artist:'Demo tape',cover:'assets/images/case-07.webp'},
-    {title:'Vacant Frequencies',artist:'Demo tape',cover:'assets/images/case-08.webp'}
-  ].map((item,index) => ({...item,id:'demo-'+index,source:null,demo:true,created:index}));
-  let library=[...demo],queue=demo.slice(0,4).map(x=>x.id),activeId='demo-1',windowIndex=1,playing=false,volume=.7,toastTimeout;
+  // Cover assets are fallbacks only; no sample music is added to the library.
+  const defaultCovers=Array.from({length:8},(_,i)=>'assets/images/case-'+pad(i+1)+'.webp');
+  let nextDefaultCover=0;
+  function defaultCover(){return defaultCovers[nextDefaultCover%defaultCovers.length]}
+  function takeDefaultCover(){const cover=defaultCover();nextDefaultCover++;return cover}
+  function previewDefaultCover(){const image=document.createElement('img');image.alt='Default cover for this import';image.src=defaultCover();$('coverPreview').replaceChildren(image)}
+  let library=[],queue=[],activeId=null,windowIndex=1,playing=false,volume=.7,toastTimeout;
   let playRequest=0,wantsPlayback=false;
   let activeSongIndex=0; // A cassette can contain several audio tracks.
   const resumePositions=new Map();
@@ -55,7 +51,14 @@
     if($('sortSelect').value==='za')shown.sort((a,b)=>b.title.localeCompare(a.title));
     if($('sortSelect').value==='recent')shown.sort((a,b)=>b.created-a.created);
     const grid=$('libraryGrid');grid.replaceChildren();
-    if(!shown.length){const empty=document.createElement('p');empty.className='queue-empty';empty.textContent='No music matches that search.';grid.append(empty)}
+    if(!shown.length){
+      const empty=document.createElement('div');empty.className='library-empty';
+      const heading=document.createElement('h2');heading.textContent=library.length?'No matching music':'Your library is empty';
+      const hint=document.createElement('p');hint.textContent=library.length?'Try another song or artist name.':'Import a song or album to create your first tape.';
+      empty.append(heading,hint);
+      if(!library.length){const button=document.createElement('button');button.type='button';button.className='btn btn-dark';button.textContent='Import your first tape';button.onclick=openModal;empty.append(button)}
+      grid.append(empty);
+    }
     shown.forEach(track=>{
       const card=document.createElement('article');card.className='album-card';
       const select=document.createElement('button');select.className='album-art-btn';select.type='button';select.title='Add '+track.title+' to queue';select.setAttribute('aria-label','Add '+track.title+' to queue');
@@ -97,7 +100,7 @@
     $('playerWindow').classList.toggle('is-playing',playing);
     $('playbackStatus').replaceChildren();
     const strong=document.createElement('strong');strong.textContent=tape?tape.title:'Empty deck';
-    let details=playing?' · playing':' · '+(song?.source?'ready':'visual demo · import an audio file to play');
+    let details=playing?' · playing':' · '+(song?.source?'ready':'import music, then load a tape from your Library');
     if(count>1)details=' · '+pad(activeSongIndex+1)+'/'+pad(count)+' '+song.name+details;
     $('playbackStatus').append(strong,document.createTextNode(details));renderQueue();
   }
@@ -116,7 +119,7 @@
   async function play(){
     const track=item(activeId),song=currentSong();
     if(!track){toast('Load a cassette from the queue first');return}
-    if(!song?.source){toast('This is demo artwork. Import an audio file to hear playback.');emit('play',{track,hasAudio:false});return}
+    if(!song?.source){toast('This tape has no playable audio. Import a song to continue.');emit('play',{track,hasAudio:false});return}
     wantsPlayback=true;const request=++playRequest;
     const trackId=activeId,index=activeSongIndex;
     try{
@@ -282,7 +285,7 @@
   });
   // Import dialog: each audio file sits directly beside its own editable song name.
   let coverUrl=null,trackRowId=0,returnFocus=null;
-  function openModal(){hideMenu();returnFocus=document.activeElement;$('modalScrim').hidden=false;document.body.style.overflow='hidden';$('importError').textContent='';$('trackRows').replaceChildren();$('tapeTitle').value='';$('coverFile').value='';if(coverUrl)URL.revokeObjectURL(coverUrl);coverUrl=null;$('coverPreview').textContent='▧';addRow();addRow();addRow();$('modalClose').focus()}
+  function openModal(){hideMenu();returnFocus=document.activeElement;$('modalScrim').hidden=false;document.body.style.overflow='hidden';$('importError').textContent='';$('trackRows').replaceChildren();$('tapeTitle').value='';$('coverFile').value='';if(coverUrl)URL.revokeObjectURL(coverUrl);coverUrl=null;previewDefaultCover();addRow();addRow();addRow();$('modalClose').focus()}
   function closeModal(){if(coverUrl){URL.revokeObjectURL(coverUrl);coverUrl=null}$('modalScrim').hidden=true;document.body.style.overflow='';if(returnFocus?.focus)returnFocus.focus()}
   function addRow(){trackRowId++;const row=document.createElement('div');row.className='track-entry';row.dataset.row=String(trackRowId);
     const input=document.createElement('input');input.type='file';input.accept='audio/*,.mp3,.wav,.flac,.m4a,.ogg,.aac,.opus,.aiff,.aif';input.hidden=true;
@@ -308,10 +311,10 @@
     const tapeTitle=typedTitle||(tracks.length===1?tracks[0].name:'My Mixtape');
     const imported={
       id:'tape-'+Date.now()+'-'+Math.random().toString(36).slice(2),
-      title:tapeTitle,artist:'My music',cover:img||'assets/images/case-06.webp',
+      title:tapeTitle,artist:'My music',cover:img||takeDefaultCover(),
       customCover:!!img,tracks,source:tracks[0].source,demo:false,created:Date.now()
     };
-    library.push(imported);renderLibrary();closeModal();navigate(2);
+    library.push(imported);$('searchInput').value='';renderLibrary();closeModal();navigate(2);
     toast('Added '+tapeTitle+' ('+tracks.length+' song'+(tracks.length===1?'':'s')+') to Library');
     emit('library-import',{tracks:[imported],tape:imported});
   };
