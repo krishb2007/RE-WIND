@@ -743,96 +743,56 @@ html[data-theme="dark"] .sfx-toggle[aria-pressed="false"]{
 }
 @media(max-width:480px){.sfx-toggle{padding:6px 8px;font-size:10px}}
 
-/* Dedicated cassette track-skip controls. These are separate from the existing
-   REW / FF transport buttons so seeking still works on multi-song tapes. */
-.deck-song-button{
+/* Player previous/next use a pixel-matched image slice of the original
+   RE-WIND transport buttons. This keeps their metal faces, depth, shading,
+   and perspective identical without changing the boombox image asset. */
+.deck-song-button {
   position:absolute;
   top:24.8%;
   width:5.7%;
   height:7.5%;
-  z-index:5;
-  border:1px solid #101114;
-  border-top-color:#5b5e64;
-  border-radius:3px 3px 6px 6px;
   padding:0;
-  color:#f4f4f5;
-  background:linear-gradient(180deg,#444950 0%,#282b30 19%,#15171c 83%,#101215 100%);
-  box-shadow:inset 0 1px 2px #ffffff3d,inset -2px -2px 3px #0009,0 3px 0 #07080a,0 5px 5px #0008;
+  border:0;
+  border-radius:0;
+  z-index:5;
+  background-color:transparent;
+  background-image:url("assets/images/cassette-player.webp");
+  background-repeat:no-repeat;
+  background-size:1754% 1334%;
+  background-position:34.95% 26.49%;
   cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-  transition:transform .1s ease,box-shadow .1s ease,filter .1s ease,opacity .15s ease;
   -webkit-tap-highlight-color:transparent;
+  transition:filter .13s ease,transform .13s ease;
 }
 .deck-song-button.previous-song{left:24.7%}
 .deck-song-button.next-song{left:76.4%}
-.deck-song-button::before{
+.deck-song-button::before {
   content:attr(data-label);
   position:absolute;
-  bottom:157%;
   left:50%;
+  bottom:112%;
   transform:translateX(-50%);
-  color:#f9eceb;
-  text-shadow:0 1px 2px #5f2024;
-  font-weight:850;
-  font-size:clamp(7px,.7vw,11px);
-  line-height:1.1;
-  letter-spacing:.07em;
+  font:800 clamp(10px,.95vw,15px)/1 Arial,sans-serif;
+  color:#fff5f2;
+  text-shadow:0 1px 2px #5d2028;
+  white-space:nowrap;
   pointer-events:none;
 }
-.deck-song-button .song-arrow{
-  display:block;
-  font-size:clamp(11px,1.32vw,19px);
-  font-weight:900;
-  line-height:1;
-  text-shadow:0 1px 2px #000b;
-  pointer-events:none;
-}
-.deck-song-button:not(:disabled):hover{filter:brightness(1.2)}
-.deck-song-button:not(:disabled):active{
-  transform:translateY(3px);
-  box-shadow:inset 0 3px 5px #000b,0 1px 1px #0009;
-}
+.deck-song-button .song-arrow{display:none}
+.deck-song-button:disabled{opacity:.83;cursor:default}
+.deck-song-button:not(:disabled):hover{filter:brightness(1.08)}
+.deck-song-button:not(:disabled):active{filter:brightness(.83);transform:translateY(2px)}
 .deck-song-button:focus-visible{outline:2px solid #fff;outline-offset:4px}
-.deck-song-button:disabled{
-  opacity:.58;cursor:not-allowed;
-}
-@media(prefers-reduced-motion:reduce){
-  .deck-song-button{transition:none}
+@media(prefers-reduced-motion:reduce){.deck-song-button{transition:none}}
+/* The original cassette photo has a printed name. This blank label
+   hides it even when inserted tape names are very long. */
+#cassetteDevice .tape-title{
+  background:linear-gradient(#f7f1e8,#eee6d9);
+  color:transparent;
+  font-size:0;
+  text-shadow:none;
 }
 
-/* Rebalanced top bar proportions at laptop/tablet/phone sizes. */
-@media(max-width:1100px){
-  .header{grid-template-columns:minmax(166px,1fr) auto minmax(145px,1fr);gap:6px;padding:0 15px}
-  .brand{gap:8px}
-  .brand-mark{width:40px;height:40px}
-  .brand-mark svg{width:30px;height:30px}
-  .wordmark{font-size:clamp(26px,2.9vw,34px)}
-  .navtab{min-width:90px;padding:0 7px;font-size:10px;gap:5px}
-  .header-icons{gap:3px}
-}
-@media(max-width:760px){
-  .header{height:115px;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:48px 49px;padding:7px 14px;gap:0}
-  .brand{grid-column:1;gap:9px}
-  .brand-mark{width:37px;height:37px}
-  .brand-mark svg{width:27px;height:27px}
-  .wordmark{font-size:29px}
-  .tagline{font-size:7px;letter-spacing:.14em;margin-top:5px}
-  .header-icons{grid-column:2;gap:2px}
-  .nav{grid-row:2;grid-column:1/-1;justify-self:stretch;justify-content:center;gap:0;border-top:1px solid #ffffff12}
-  .navtab{flex:1;min-width:0;max-width:120px;height:43px;font-size:10px;padding:0 6px;gap:5px}
-  .navtab.active::after{bottom:1px;width:calc(100% - 24px);left:12px}
-  .toparrow{width:26px;font-size:23px}
-}
-@media(max-width:380px){
-  .header{padding:7px 10px}
-  .brand-mark{width:34px;height:34px}
-  .brand-mark svg{width:25px;height:25px}
-  .wordmark{font-size:26px}
-  .header-icons button{width:27px}
-  .theme-toggle{min-width:62px!important;padding:0 5px!important;gap:4px!important}
-  .navtab{font-size:9px;letter-spacing:.04em;gap:3px}
-  .nav-index{font-size:8px}
-}
 </style>
 </head>
 <body>
@@ -939,15 +899,15 @@ html[data-theme="dark"] .sfx-toggle[aria-pressed="false"]{
         <div class="device" id="cassetteDevice">
           <img src="assets/images/cassette-player.webp" alt="Black RE-WIND cassette stereo with volume knob, rewind, play, stop, eject, fast forward, twin speakers, and a cassette deck" class="device-art">
           <button class="volume-control" type="button" title="Volume: 70%" aria-label="Volume" role="slider" aria-valuemin="0" aria-valuemax="100" aria-valuenow="70" aria-valuetext="70 percent" aria-orientation="vertical" id="volumeBtn"><span class="volume-knob-face" aria-hidden="true"></span></button>
-          <button class="deck-song-button previous-song" id="previousSongButton" type="button" data-label="PREV" title="Load a mixtape to skip songs" aria-label="Previous song" disabled><span class="song-arrow" aria-hidden="true">◀❙</span></button>
+          <button class="deck-song-button previous-song" id="previousSongButton" type="button" data-label="❙◀" title="Load a mixtape to skip songs" aria-label="Previous song" disabled></button>
           <button class="deck-hit rewind" id="rewButton" aria-label="Rewind ten seconds" title="Rewind"></button>
           <button class="deck-hit play" id="playButton" aria-label="Play or pause" title="Play / Pause"></button>
           <button class="deck-hit stop" id="stopButton" aria-label="Stop and keep the current position" title="Stop and keep position"></button>
           <button class="deck-hit eject" id="ejectButton" aria-label="Eject cassette" title="Eject"></button>
           <button class="deck-hit forward" id="forwardButton" aria-label="Forward ten seconds" title="Fast forward"></button>
-          <button class="deck-song-button next-song" id="nextSongButton" type="button" data-label="NEXT" title="Load a mixtape to skip songs" aria-label="Next song" disabled><span class="song-arrow" aria-hidden="true">❙▶</span></button>
+          <button class="deck-song-button next-song" id="nextSongButton" type="button" data-label="▶❙" title="Load a mixtape to skip songs" aria-label="Next song" disabled></button>
           <div class="deck-drop-target" id="deckDropTarget" aria-hidden="true"><span>DROP TAPE TO INSERT</span></div>
-          <div class="tape-title" id="tapeLabel" aria-hidden="true">Mix Tape</div>
+          <div class="tape-title" id="tapeLabel" aria-hidden="true"></div>
           <div class="reel left" aria-hidden="true"></div><div class="reel right" aria-hidden="true"></div>
           <div class="deck-ejected" id="ejectedVisual" hidden>NO TAPE INSERTED</div>
         </div>
