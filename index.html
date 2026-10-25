@@ -765,7 +765,17 @@ html[data-theme="dark"] .sfx-toggle[aria-pressed="false"]{
   transition:filter .13s ease,transform .13s ease;
 }
 .deck-song-button.previous-song{left:24.7%}
-.deck-song-button.next-song{left:73.3%}
+/* The next button borrows the FF-side physical key, not the left-hand REW
+   key: right-side lighting/perspective match the adjacent transport button. */
+.deck-song-button.next-song{
+  left:73.3%;
+  background-position:71.2% 26.49%;
+  transform:rotate(-1deg);
+  transform-origin:50% 70%;
+}
+.deck-song-button.next-song:not(:disabled):active{
+  transform:translateY(2px) rotate(-1deg);
+}
 .deck-song-button::before {
   content:attr(data-label);
   position:absolute;
