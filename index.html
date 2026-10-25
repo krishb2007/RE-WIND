@@ -289,6 +289,15 @@ html[data-theme="dark"] .device-art{
   mask-position:center;
 }
 
+
+/* Make the baked-in white Settings console match RE-WIND dark mode.
+   Filter only the image; invisible slider hit areas and their sound handlers
+   remain untouched, and light mode keeps the original image. */
+html[data-theme="dark"] .settings-visual > img{
+  filter:invert(.93) hue-rotate(180deg);
+  border-radius:13px;
+}
+
 </style>
 </head>
 <body>
