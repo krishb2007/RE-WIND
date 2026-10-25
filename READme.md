@@ -85,13 +85,24 @@ Open **http://localhost:8000** in your browser. If you do not have Python instal
 
 ```text
 RE-WIND/
-├── index.html             # Main app interface
+│
+├── assets/
+│   └── images/              # Cassette player, album artwork, and UI assets
+│
+├── css/
+│   ├── global.css           # Global styles and shared design
+│   ├── library.css          # Music library styling
+│   └── player.css           # Music player styling
+│
 ├── js/
-│   ├── app.js             # Player, library UI, queue, and interactions
-│   ├── effect.js          # Web Audio effects processing
-│   └── cassette-sfx.js    # Mechanical cassette sound effects
-└── assets/
-    └── images/            # Player and cassette visuals
+│   ├── app.js               # Main application logic and interactions
+│   ├── audio.js             # Audio-related functionality
+│   ├── cassette-sfx.js      # Mechanical cassette sound effects
+│   ├── effect.js            # Retro audio processing and effects
+│   └── library.js           # Music library and playlist management
+│
+├── index.html               # Main application entry point
+└── README.md                # Project documentation
 ```
 
 The repository also contains supporting scripts and assets as the project evolves.
