@@ -42,7 +42,16 @@
       const mid = nextContext.createBiquadFilter();
       const treble = nextContext.createBiquadFilter();
       const bitCrusher = nextContext.createWaveShaper();
+      const crusherTone = nextContext.createBiquadFilter();
+      crusherTone.type = "lowpass";
+      crusherTone.frequency.value = 20000;
       const output = nextContext.createGain();
+      const limiter = nextContext.createDynamicsCompressor();
+      limiter.threshold.value = -6;
+      limiter.knee.value = 6;
+      limiter.ratio.value = 12;
+      limiter.attack.value = 0.003;
+      limiter.release.value = 0.14;
 
       warmth.type = "lowshelf";
       warmth.frequency.value = 180;
@@ -62,7 +71,6 @@
       const flutterOscillator = nextContext.createOscillator();
       const wowDepth = nextContext.createGain();
       const flutterDepth = nextContext.createGain();
-      const wowMix = nextContext.createGain();
       delay.delayTime.value = 0.02;
       wowOscillator.frequency.value = 0.35;
       flutterOscillator.frequency.value = 5.5;
@@ -84,6 +92,15 @@
       const vinylGain = nextContext.createGain();
       const humOscillator = nextContext.createOscillator();
       const humGain = nextContext.createGain();
+      const humOvertone = nextContext.createOscillator();
+      const humOvertone2 = nextContext.createOscillator();
+      const humOvertoneGain = nextContext.createGain();
+      const humOvertone2Gain = nextContext.createGain();
+      humOvertone.type = humOvertone2.type = "sine";
+      humOvertone.frequency.value = 120;
+      humOvertone2.frequency.value = 180;
+      humOvertoneGain.gain.value = 0.38;
+      humOvertone2Gain.gain.value = 0.16;
 
       noiseSource.buffer = noiseBuffer;
       noiseSource.loop = true;
@@ -95,17 +112,18 @@
       humOscillator.type = "sine";
       humOscillator.frequency.value = 60;
 
-      input.connect(warmth);
+      // Modulate the entire signal, rather than a quiet parallel copy.
       input.connect(delay);
-      delay.connect(wowMix);
-      wowMix.connect(warmth);
+      delay.connect(warmth);
       warmth.connect(warmthCutoff);
       warmthCutoff.connect(bass);
       bass.connect(mid);
       mid.connect(treble);
       treble.connect(bitCrusher);
-      bitCrusher.connect(output);
-      output.connect(nextContext.destination);
+      bitCrusher.connect(crusherTone);
+      crusherTone.connect(output);
+      output.connect(limiter);
+      limiter.connect(nextContext.destination);
 
       wowOscillator.connect(wowDepth);
       flutterOscillator.connect(flutterDepth);
@@ -119,14 +137,23 @@
       vinylFilter.connect(vinylGain);
       vinylGain.connect(output);
       humOscillator.connect(humGain);
+      humOvertone.connect(humOvertoneGain);
+      humOvertone2.connect(humOvertone2Gain);
+      humOvertoneGain.connect(humGain);
+      humOvertone2Gain.connect(humGain);
       humGain.connect(output);
 
       const mediaSource = nextContext.createMediaElementSource(audioElement);
       mediaSource.connect(input);
+      // Vintage tape warp shifts pitch along with tape speed.
+      if ("preservesPitch" in audioElement) audioElement.preservesPitch = false;
+      if ("webkitPreservesPitch" in audioElement) audioElement.webkitPreservesPitch = false;
       wowOscillator.start();
       flutterOscillator.start();
       noiseSource.start();
       humOscillator.start();
+      humOvertone.start();
+      humOvertone2.start();
 
       context = nextContext;
       source = mediaSource;
@@ -137,10 +164,10 @@
         mid,
         treble,
         bitCrusher,
+        crusherTone,
         delay,
         wowDepth,
         flutterDepth,
-        wowMix,
         hissGain,
         vinylGain,
         humGain,
@@ -154,13 +181,14 @@
     }
 
     function createQuantizationCurve(amount) {
-      if (amount < 0.01) return null;
-
-      const steps = Math.round(65536 * Math.pow(32 / 65536, amount));
-      const curve = new Float32Array(4096);
+      if (amount < 0.005) return null;
+      // The low end of the knob is subtle; the maximum is unmistakably 2-bit.
+      const bits = Math.max(2, Math.round(16 - 14 * Math.pow(amount, 0.65)));
+      const levels = Math.pow(2, bits) - 1;
+      const curve = new Float32Array(8192);
       for (let i = 0; i < curve.length; i++) {
         const sample = (i * 2) / (curve.length - 1) - 1;
-        curve[i] = Math.round(sample * steps) / steps;
+        curve[i] = (Math.round((sample + 1) * 0.5 * levels) / levels) * 2 - 1;
       }
       return curve;
     }
@@ -168,22 +196,31 @@
     function update() {
       if (!context || !nodes) return;
 
-      setParam(nodes.warmth.gain, values.warmth * 4);
+      setParam(nodes.warmth.gain, values.warmth * 9);
       setParam(
         nodes.warmthCutoff.frequency,
-        18000 * Math.pow(8500 / 18000, values.warmth)
+        18000 * Math.pow(4200 / 18000, values.warmth)
       );
-      setParam(nodes.bass.gain, (values.bass - 0.5) * 14);
-      setParam(nodes.mid.gain, (values.mid - 0.5) * 12);
-      setParam(nodes.treble.gain, (values.treble - 0.5) * 14);
+      setParam(nodes.bass.gain, (values.bass - 0.5) * 24);
+      setParam(nodes.mid.gain, (values.mid - 0.5) * 24);
+      setParam(nodes.treble.gain, (values.treble - 0.5) * 24);
       nodes.bitCrusher.curve = createQuantizationCurve(values.lofi);
-      setParam(nodes.wowDepth.gain, values.wow * 0.0025);
-      setParam(nodes.flutterDepth.gain, values.flutter * 0.00055);
-      setParam(nodes.wowMix.gain, (values.wow + values.flutter) * 0.06);
-      setParam(nodes.hissGain.gain, isPlaying ? values.hiss * 0.018 : 0);
-      setParam(nodes.vinylGain.gain, isPlaying ? values.vinyl * 0.009 : 0);
-      setParam(nodes.humGain.gain, isPlaying ? values.hum * 0.004 : 0);
-      audioElement.playbackRate = 0.75 + values.warp * 0.5;
+      setParam(
+        nodes.crusherTone.frequency,
+        20000 * Math.pow(1400 / 20000, values.lofi)
+      );
+      setParam(nodes.wowDepth.gain, values.wow * 0.009);
+      setParam(nodes.flutterDepth.gain, values.flutter * 0.0018);
+      setParam(nodes.hissGain.gain, isPlaying ? values.hiss * 0.045 : 0);
+      setParam(nodes.vinylGain.gain, isPlaying ? values.vinyl * 0.035 : 0);
+      setParam(nodes.humGain.gain, isPlaying && values.hum > 0
+        ? 0.004 + values.hum * 0.047 : 0);
+      const warpRate = values.warp < 0.5
+        ? 1 - (0.5 - values.warp) * 0.76
+        : 1 + (values.warp - 0.5) * 0.96;
+      if (Math.abs(audioElement.playbackRate - warpRate) > 0.001) {
+        audioElement.playbackRate = warpRate;
+      }
     }
 
     async function unlock() {
