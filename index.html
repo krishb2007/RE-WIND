@@ -183,7 +183,7 @@ button:disabled{cursor:not-allowed;opacity:.35}
           <button class="volume-control" title="Adjust volume" aria-label="Increase volume" id="volumeBtn"></button>
           <button class="deck-hit rewind" id="rewButton" aria-label="Rewind ten seconds" title="Rewind"></button>
           <button class="deck-hit play" id="playButton" aria-label="Play or pause" title="Play / Pause"></button>
-          <button class="deck-hit stop" id="stopButton" aria-label="Stop" title="Stop"></button>
+          <button class="deck-hit stop" id="stopButton" aria-label="Pause playback" title="Pause — keeps your place"></button>
           <button class="deck-hit eject" id="ejectButton" aria-label="Eject cassette" title="Eject"></button>
           <button class="deck-hit forward" id="forwardButton" aria-label="Forward ten seconds" title="Fast forward"></button>
           <div class="tape-title" id="tapeLabel" aria-hidden="true">Mix Tape</div>
@@ -302,7 +302,7 @@ button:disabled{cursor:not-allowed;opacity:.35}
     action('Add to queue',()=>{queue.push(track.id);renderQueue();toast(track.title+' added to queue')});
     action('Load in Player',()=>{if(!queue.includes(track.id))queue.push(track.id);loadTrack(track.id);navigate(1)});
     action('Remove from queue',()=>{const ix=queue.indexOf(track.id);if(ix>=0){queue.splice(ix,1);if(activeId===track.id)stop();renderQueue();toast('Removed from queue')}});
-    if(!track.demo)action('Remove imported track',()=>{library=library.filter(t=>t.id!==track.id);queue=queue.filter(id=>id!==track.id);if(track.source)URL.revokeObjectURL(track.source);if(activeId===track.id){stop();activeId=null}renderQueue();renderLibrary();toast('Track removed')});
+    if(!track.demo)action('Remove imported track',()=>{library=library.filter(t=>t.id!==track.id);queue=queue.filter(id=>id!==track.id);if(track.source)URL.revokeObjectURL(track.source);if(activeId===track.id){resetCurrent();activeId=null}renderQueue();renderLibrary();toast('Track removed')});
     const rect=button.getBoundingClientRect();menu.hidden=false;menu.style.top=Math.min(rect.bottom+7,innerHeight-180)+'px';menu.style.left=Math.max(8,Math.min(rect.left-154,innerWidth-201))+'px';
   }
   function hideMenu(){$('contextMenu').hidden=true}
@@ -311,17 +311,18 @@ button:disabled{cursor:not-allowed;opacity:.35}
   $('gridView').onclick=()=>{$('libraryGrid').classList.remove('list-mode');$('gridView').classList.add('active');$('listView').classList.remove('active')};
   $('listView').onclick=()=>{$('libraryGrid').classList.add('list-mode');$('listView').classList.add('active');$('gridView').classList.remove('active')};
   function refreshDeck(){const track=item(activeId);$('tapeLabel').textContent=track?track.title:'Mix Tape';$('ejectedVisual').hidden=!!track;$('playerWindow').classList.toggle('is-playing',playing);$('playbackStatus').innerHTML='';const strong=document.createElement('strong');strong.textContent=track?track.title:'Empty deck';$('playbackStatus').append(strong,document.createTextNode(playing?' · playing':' · '+(track?.source?'ready':'visual demo · import an audio file to play')));renderQueue()}
-  function loadTrack(id){stop();activeId=id;const track=item(id);if(track?.source){audio.src=track.source;audio.load()}else audio.removeAttribute('src');refreshDeck();emit('load',{track});toast(track?.title+' loaded into player')}
+  function loadTrack(id){const track=item(id);if(id===activeId){refreshDeck();toast(track?.title+' is already loaded');return}resetCurrent();activeId=id;if(track?.source){audio.src=track.source;audio.load()}else audio.removeAttribute('src');refreshDeck();emit('load',{track});toast(track?.title+' loaded into player')}
   function rememberPosition(trackId=activeId){const position=Number(audio.currentTime);if(trackId&&Number.isFinite(position)&&position>=0&&!audio.ended)resumePositions.set(trackId,position);return position}
-  function restorePosition(trackId){const position=resumePositions.get(trackId)||0;if(position>0&&Number.isFinite(audio.duration)&&position<audio.duration&&Math.abs(audio.currentTime-position)>.08)audio.currentTime=position;return position}
+  function restorePosition(trackId){const position=resumePositions.get(trackId)||0;if(position<=0||Math.abs(audio.currentTime-position)<=.08)return position;const duration=Number(audio.duration);if(Number.isFinite(duration)&&position>=duration)return position;try{audio.currentTime=position}catch{}return position}
   function metadataReady(){if(audio.readyState>=1)return Promise.resolve();return new Promise((resolve,reject)=>{const done=()=>{cleanup();resolve()};const fail=()=>{cleanup();reject(new Error('metadata'))};const cleanup=()=>{audio.removeEventListener('loadedmetadata',done);audio.removeEventListener('error',fail)};audio.addEventListener('loadedmetadata',done,{once:true});audio.addEventListener('error',fail,{once:true})})}
   async function play(){const track=item(activeId);if(!track){toast('Load a cassette from the queue first');return}if(!track.source){toast('This is demo artwork. Import an audio file to hear playback.');emit('play',{track,hasAudio:false});return}wantsPlayback=true;const request=++playRequest;const trackId=activeId;try{await metadataReady();if(request!==playRequest||activeId!==trackId||!wantsPlayback)return;const resumeAt=restorePosition(trackId);await audio.play();if(request!==playRequest||activeId!==trackId||!wantsPlayback)return;if(resumeAt>0&&audio.currentTime+0.08<resumeAt)audio.currentTime=resumeAt;playing=true;refreshDeck();emit('play',{track,hasAudio:true,currentTime:audio.currentTime})}catch{if(request===playRequest){wantsPlayback=false;toast('Could not play this audio file. Try another format.')}}}
   function pause(){wantsPlayback=false;playRequest++;const position=rememberPosition();audio.pause();playing=false;refreshDeck();emit('pause',{track:item(activeId),currentTime:position})}
-  function stop(){wantsPlayback=false;playRequest++;audio.pause();if(Number.isFinite(audio.duration)&&audio.duration>0)audio.currentTime=0;if(activeId)resumePositions.delete(activeId);playing=false;refreshDeck();emit('stop',{})}
-  $('playButton').onclick=()=>wantsPlayback?pause():play();$('stopButton').onclick=()=>{stop();toast('Stopped')};
+  function stop(){wantsPlayback=false;playRequest++;const position=rememberPosition();audio.pause();playing=false;refreshDeck();emit('stop',{currentTime:position})}
+  function resetCurrent(){wantsPlayback=false;playRequest++;audio.pause();try{audio.currentTime=0}catch{}if(activeId)resumePositions.delete(activeId);playing=false}
+  $('playButton').onclick=()=>wantsPlayback?pause():play();$('stopButton').onclick=()=>{stop();toast('Paused — press Play to continue')};
   $('rewButton').onclick=()=>{if(audio.src)audio.currentTime=Math.max(0,audio.currentTime-10);toast('Rewind ◀◀');emit('rewind',{seconds:10})};
   $('forwardButton').onclick=()=>{if(audio.src&&Number.isFinite(audio.duration))audio.currentTime=Math.min(audio.duration,audio.currentTime+10);toast('Fast forward ▶▶');emit('forward',{seconds:10})};
-  $('ejectButton').onclick=()=>{stop();activeId=null;audio.removeAttribute('src');audio.load();refreshDeck();toast('Tape ejected');emit('eject',{})};
+  $('ejectButton').onclick=()=>{resetCurrent();activeId=null;audio.removeAttribute('src');audio.load();refreshDeck();toast('Tape ejected');emit('eject',{})};
   $('volumeBtn').onclick=()=>{volume=volume>=1?.2:Math.min(1,Math.round((volume+.2)*10)/10);audio.volume=volume;toast('Volume '+Math.round(volume*100)+'%');emit('volume',{value:volume})};
   audio.addEventListener('timeupdate',()=>{if(!audio.paused)rememberPosition()});
   audio.addEventListener('loadedmetadata',()=>restorePosition(activeId));
