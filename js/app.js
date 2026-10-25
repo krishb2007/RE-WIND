@@ -55,7 +55,14 @@
     shown.forEach(track=>{
       const card=document.createElement('article');card.className='album-card';
       const select=document.createElement('button');select.className='album-art-btn';select.type='button';select.title='Add '+track.title+' to queue';select.setAttribute('aria-label','Add '+track.title+' to queue');
-      const cover=document.createElement('img');cover.className='album-cover';cover.src=track.cover;cover.alt=track.title+' album artwork';select.append(cover);
+      const cover=document.createElement('img');cover.className='album-cover';cover.src=track.cover;cover.alt=track.title+' album artwork';
+      // A separate case layer gives imported artwork the same physical-media finish as demo tapes.
+      if(track.customCover){
+        const caseFrame=document.createElement('span');caseFrame.className='album-cover-case';
+        caseFrame.append(cover);select.append(caseFrame);
+      }else{
+        select.append(cover);
+      }
       select.onclick=()=>{queue.push(track.id);renderQueue();toast(track.title+' added to queue');emit('queue-change',{ids:[...queue]})};
       const info=document.createElement('div');info.className='album-meta';
       const texts=document.createElement('div');texts.className='album-text';const title=document.createElement('strong');title.textContent=track.title;const caption=document.createElement('small');caption.textContent='TAPE';texts.append(title,caption);
@@ -127,7 +134,7 @@
     for(const row of rows){const f=row.querySelector('input[type=file]').files[0];const n=row.querySelector('input[type=text]').value.trim();if(f){if(!isAudioFile(f)){$('importError').textContent='Choose a supported audio file (MP3, WAV, FLAC, M4A, OGG, AAC, or AIFF).';return}if(!n){$('importError').textContent='Please give every selected audio file a song name.';return}entries.push({file:f,name:n})}}
     if(!entries.length){$('importError').textContent='Choose at least one audio file to import.';return}
     const img=coverUrl;coverUrl=null;
-    const imported=entries.map(({file,name},i)=>({id:'user-'+Date.now()+'-'+Math.random().toString(36).slice(2)+'-'+i,title:name,artist:'My music',cover:img||'assets/images/case-06.webp',source:URL.createObjectURL(file),demo:false,created:Date.now()+i}));
+    const imported=entries.map(({file,name},i)=>({id:'user-'+Date.now()+'-'+Math.random().toString(36).slice(2)+'-'+i,title:name,artist:'My music',cover:img||'assets/images/case-06.webp',customCover:!!img,source:URL.createObjectURL(file),demo:false,created:Date.now()+i}));
     library.push(...imported);renderLibrary();closeModal();navigate(2);toast(imported.length+' track'+(imported.length===1?'':'s')+' added to Library');emit('library-import',{tracks:imported});
   };
   window.addEventListener('beforeunload',()=>{if(coverUrl)URL.revokeObjectURL(coverUrl);const urls=new Set(library.flatMap(track=>[track.source,track.cover]).filter(url=>url?.startsWith('blob:')));urls.forEach(url=>URL.revokeObjectURL(url))});
