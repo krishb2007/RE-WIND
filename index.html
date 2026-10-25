@@ -1,139 +1,245 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#221e1a">
-  <title>RE-WIND — Cassette Player</title>
-  <link rel="stylesheet" href="./css/global.css">
-  <link rel="stylesheet" href="./css/player.css">
-  <link rel="stylesheet" href="./css/library.css">
-  <script src="./js/library.js" defer></script>
-  <script src="./js/player.js" defer></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1c1c1d">
+<title>RE-WIND | Music Lives On</title>
+<style>
+:root{--ink:#18191b;--ink2:#26272a;--red:#e32740;--rose:#fde9ec;--paper:#fff;--gray:#777b83;--line:#e7e8e9;--soft:#f6f6f6;--muted:#9ca0a5;--radius:14px;--shadow:0 10px 28px rgba(15,16,18,.045)}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+html{background:#19191b}body{background:radial-gradient(circle at 12% 18%,#efd5cf 0,transparent 31rem),radial-gradient(circle at 88% 70%,#d7e4e1 0,transparent 34rem),linear-gradient(145deg,#fffdfa 0%,#f5f1eb 56%,#eee8df 100%);background-attachment:fixed}
+button,input,select{font:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #e3274088;outline-offset:3px}
+button:disabled{cursor:not-allowed;opacity:.35}
+[hidden]{display:none!important}
+/* The main navigation is shared by all three screens. */
+.header{height:87px;background:#1b1b1d;color:white;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:18px;padding:0 clamp(17px,2vw,37px);position:relative;z-index:30}
+.brand{display:flex;align-items:center;gap:17px;min-width:0;white-space:nowrap}
+.record-logo{width:59px;height:59px;border:2px solid white;border-radius:50%;position:relative;flex:none}
+.record-logo:before,.record-logo:after{content:"";position:absolute;border:2px solid #fff;border-radius:50%}
+.record-logo:before{inset:8px}.record-logo:after{inset:19px}
+.wordmark{display:block;font-size:clamp(22px,2.55vw,40px);font-weight:900;letter-spacing:-.9px;line-height:.89}
+.tagline{display:block;font-size:clamp(7px,.65vw,11px);letter-spacing:clamp(2px,.3vw,5px);padding-left:4px;margin-top:9px;font-weight:600}
+.nav{display:flex;align-items:center;gap:clamp(1px,.7vw,12px);justify-self:center}
+.navtab,.toparrow{height:46px;color:#f8f8f8;background:transparent;border:0;font-size:14px;letter-spacing:.04em;font-weight:600}
+.navtab{min-width:clamp(83px,11.3vw,200px);padding:0 15px;position:relative;border-radius:10px}
+.navtab.active{background:linear-gradient(180deg,#2e2e30,#272023)}
+.navtab.active:after{content:"";width:56px;height:2px;position:absolute;bottom:0;left:50%;transform:translateX(-50%);background:var(--red)}
+.toparrow{width:36px;font-size:33px;font-weight:300;line-height:1}
+.navtab:hover,.toparrow:hover:not(:disabled){background-color:#333437}
+.header-icons{display:flex;align-items:center;gap:18px;justify-self:end}
+.header-icons button{width:37px;height:37px;display:grid;place-items:center;background:transparent;color:white;border:0;padding:0;font-size:29px}
+.header-icons button:hover{opacity:.75}
+/* Sliding windows */
+.viewport{overflow:hidden;width:100%;height:calc(100vh - 87px);min-height:610px}
+.track{width:300%;height:100%;display:flex;transform:translateX(-33.333333%);transition:transform .46s cubic-bezier(.2,.77,.2,1)}
+.window{width:33.333333%;flex:none;min-width:0;height:100%;overflow-y:auto;background:linear-gradient(150deg,#ffffffed,#fffaf4df);position:relative}
+.section-pad{width:min(100%,1720px);margin:auto;padding:clamp(18px,2.8vw,46px)}
+/* Player */
+.player-layout{display:grid;grid-template-columns:minmax(0,2.2fr) minmax(280px,.94fr);column-gap:clamp(15px,2vw,42px);align-items:center;min-height:calc(100vh - 87px);padding-top:35px;padding-bottom:40px}
+.deck-area{min-width:0;position:relative}
+.device{position:relative;width:100%;max-width:1090px;margin:auto}
+.device-art{display:block;width:100%;height:auto;user-select:none;pointer-events:none}
+.deck-hit{position:absolute;top:20%;height:15%;width:7.3%;border:0;background:transparent;border-radius:9px;z-index:3;padding:0;color:transparent}
+.deck-hit:hover{background:rgba(255,255,255,.07);box-shadow:0 0 0 1px rgba(255,255,255,.15) inset}
+.deck-hit:active{background:rgba(0,0,0,.17)}
+.deck-hit.rewind{left:31.5%}.deck-hit.play{left:39.9%}.deck-hit.stop{left:48.2%}.deck-hit.eject{left:56.4%}.deck-hit.forward{left:64.9%}
+.volume-control{position:absolute;left:10.1%;top:16.3%;height:16%;width:8%;border:0;background:transparent;z-index:3;border-radius:50%}
+.volume-control:hover{box-shadow:0 0 0 2px #d8d8d8aa}
+.tape-title{position:absolute;left:39.2%;top:53.9%;width:23.8%;height:8%;display:flex;align-items:center;justify-content:center;text-align:center;font:italic clamp(9px,1.7vw,24px)/1 "Segoe Script",cursive;color:#282329;background:#f4eee3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
+.reel{position:absolute;top:64.4%;width:4.8%;aspect-ratio:1;border:2px dashed #d0d0d0;border-radius:50%;opacity:0;pointer-events:none}
+.reel.left{left:41.7%}.reel.right{left:55.8%}
+.window.is-playing .reel{opacity:.85;animation:spool 1.1s linear infinite}
+@keyframes spool{to{transform:rotate(360deg)}}
+.deck-ejected{position:absolute;top:53.3%;left:34.1%;width:33%;height:24%;display:flex;align-items:center;justify-content:center;background:#191b20;color:#dadbdd;border:3px solid #43464b;border-radius:4px;font-size:clamp(10px,1.2vw,19px);letter-spacing:.13em;z-index:2;box-shadow:inset 0 0 15px #0008}
+.playback-caption{min-height:30px;text-align:center;margin:5px auto 0;color:#868a90;font-size:12px;letter-spacing:.05em}
+.playback-caption strong{color:#26272b}
+.player-status-row{display:flex;align-items:center;justify-content:center;gap:10px}
+.mute-button{flex:none;padding:7px 10px;border:1px solid #dfe0e3;border-radius:7px;background:#fff;color:#35373b;font-size:11px;font-weight:700}
+.mute-button[aria-pressed="true"]{background:#fce9eb;color:#b01830;border-color:#f3c2c8}
+/* Physical cassette stack, aligned, on right */
+.queue-card{background:#fff;border:1px solid #f0f0f0;border-radius:20px;box-shadow:0 11px 28px rgba(18,18,18,.065);padding:clamp(17px,1.9vw,30px);width:100%;max-width:470px;margin:auto}
+.queue-heading{display:flex;align-items:center;justify-content:space-between;gap:6px;padding-bottom:18px;border-bottom:1px solid #e1e3e4}
+.queue-heading strong{font-size:clamp(16px,1.25vw,22px);letter-spacing:.17em}
+.queue-heading span{font-size:12px;color:#adb0b7;letter-spacing:.09em}
+.cassette-stack{display:flex;flex-direction:column;gap:2px;padding:24px 0 21px;min-height:229px;justify-content:center;align-items:center}
+.cassette-case{width:min(100%,370px);height:clamp(49px,4.6vw,70px);position:relative;display:flex;align-items:center;background:#30363a;border:3px solid #c9cdd1;border-radius:4px;box-shadow:0 4px 0 #82868c,0 8px 12px #1012141a,inset 0 0 0 3px #e5e6e750;overflow:hidden;transform:translateY(0);transition:transform .18s,box-shadow .18s}
+.cassette-case:hover{transform:translateY(-4px);z-index:4;box-shadow:0 8px 0 #82868c,0 14px 17px #10121433}
+.cassette-case .spine-image{position:absolute;inset:0;background-size:cover;background-position:center;filter:brightness(.52) saturate(.6)}
+.cassette-case:nth-child(2n) .spine-image{filter:brightness(.6) saturate(.45)}
+.cassette-case strong,.cassette-case small{z-index:1;position:relative;color:#fff;text-shadow:0 1px 4px #000b}
+.cassette-case strong{margin-left:17px;font-size:clamp(11px,1.04vw,16px);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:75%}
+.cassette-case small{margin-left:auto;margin-right:12px;font-size:11px;letter-spacing:.05em}
+.queue-items{display:flex;flex-direction:column;gap:3px}
+.queue-item{display:grid;grid-template-columns:30px minmax(0,1fr) 35px;align-items:center;gap:10px;background:transparent;border:0;border-radius:8px;text-align:left;min-height:42px;padding:6px 9px;font-size:clamp(12px,1vw,15px);width:100%;color:#202124}
+.queue-item:hover{background:#f4f4f5}.queue-item.active{background:#fce9eb}
+.queue-item .number{color:#898c93;position:relative}
+.queue-item.active .number{color:var(--red);font-weight:800}
+.queue-item .title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
+.queue-item .tape-label{text-align:right;color:#8c9097;font-size:12px}
+.queue-empty{font-size:13px;color:#868a90;text-align:center;padding:20px}
+/* Library */
+.library-screen{display:flex;flex-direction:column;gap:11px;min-height:100%;padding-top:8px}
+.library-toolbar{display:flex;align-items:center;justify-content:flex-end;min-height:48px}
+.btn{height:43px;padding:0 19px;border:1px solid #dfe0e3;border-radius:8px;background:#fff;color:#202125;font-weight:600;font-size:14px;display:inline-flex;align-items:center;gap:10px;justify-content:center;transition:background .15s,transform .15s}
+.btn:hover{background:#f7f7f7}.btn:active{transform:scale(.98)}
+.btn-dark{background:#242527;color:white;border-color:#242527}.btn-dark:hover{background:#383a3d}
+.btn .plus{font-size:26px;font-weight:300;line-height:0}
+.library-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:17px 16px}
+.album-card{background:#fff;border:1px solid #f0f0f0;border-radius:12px;box-shadow:0 6px 15px #00000008;padding:12px 12px 13px;min-width:0;position:relative;transition:transform .19s,box-shadow .19s}
+.album-card:hover{transform:translateY(-9px);box-shadow:0 16px 29px #00000012}
+.album-art-btn{width:100%;border:0;background:transparent;padding:0;display:block;text-align:left}
+.album-cover{display:block;width:100%;max-width:306px;margin:0 auto;height:auto;aspect-ratio:1.21;object-fit:fill;box-shadow:0 1px 3px #00000018;border:1px solid #dadde0}
+.album-meta{display:flex;align-items:center;gap:6px;justify-content:space-between;margin-top:11px}
+.album-text{min-width:0}.album-text strong{font-size:clamp(12px,1.16vw,17px);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.album-text small{display:block;font-size:11px;letter-spacing:.26em;color:#9699a0;margin-top:6px}
+.album-more{flex:none;border:0;background:transparent;border-radius:5px;font-size:20px;line-height:1;width:31px;height:35px}
+.album-more:hover{background:#f0f0f0}
+.library-bottom{display:flex;align-items:center;gap:18px;border:1px solid #f0f0f0;border-radius:14px;box-shadow:0 4px 12px #00000008;padding:10px 15px;margin-top:auto;min-height:55px}
+.search-field{flex:1;min-width:0;display:flex;align-items:center;gap:13px}.search-field input{border:0;outline:none;min-width:0;width:100%;height:36px;color:#34363b;background:transparent;font-size:13px}
+.search-field input::placeholder{color:#a4a8af;font-style:italic}
+.search-icon{font-size:22px;color:#686d76}
+.library-counter{color:#92969e;letter-spacing:.13em;font-size:12px;white-space:nowrap}
+.library-bottom .divider{width:1px;background:#e7e8eb;height:25px;flex:none}
+.view-toggle{display:flex;gap:5px}
+.view-toggle button{border:0;background:transparent;color:#676b72;font-size:22px;width:37px;height:33px;border-radius:5px}
+.view-toggle button.active{color:var(--red)}
+.sort-label{color:#797c83;font-size:12px;white-space:nowrap}
+.sort-select{border:0;background:transparent;padding:8px;font-size:12px;color:#37393f}
+.library-grid.list-mode{grid-template-columns:1fr 1fr}
+.list-mode .album-card{display:grid;grid-template-columns:110px minmax(0,1fr);align-items:center;gap:15px}
+.list-mode .album-meta{margin:0}
+/* Unchanged settings image with accessible interactive hit targets. */
+.settings-screen{padding-top:44px}
+.settings-visual{position:relative;width:min(100%,1580px);margin:auto}
+.settings-visual img{width:100%;display:block;height:auto;pointer-events:none;user-select:none}
+.settings-hotspot{position:absolute;appearance:none;padding:0;margin:0;border:0;border-radius:50%;background:transparent;cursor:ew-resize;touch-action:pan-y;accent-color:var(--red)}
+.settings-hotspot::-webkit-slider-runnable-track{height:100%;background:transparent}
+.settings-hotspot::-webkit-slider-thumb{appearance:none;width:15px;height:15px;border:0;border-radius:50%;background:transparent}
+.settings-hotspot::-moz-range-track{height:100%;background:transparent}
+.settings-hotspot::-moz-range-thumb{width:11px;height:11px;border:0;border-radius:50%;background:transparent}
+.settings-hotspot:focus-visible{outline:2px solid var(--red);outline-offset:2px;background:#e3274018}
+.settings-message{color:#7f838b;font-size:13px;text-align:center;padding-top:14px;min-height:36px}
+/* Import modal */
+.modal-scrim{position:fixed;inset:0;background:#14171b3e;backdrop-filter:blur(2px);z-index:90;display:flex;align-items:center;justify-content:center;padding:18px;overflow:auto}
+.modal{width:min(100%,535px);max-height:calc(100vh - 36px);overflow-y:auto;background:white;border-radius:17px;box-shadow:0 25px 75px #00000033;padding:30px 31px 25px}
+.modal-title{display:flex;justify-content:space-between;align-items:start;gap:15px}.modal-title h2{margin:0 0 25px;font-size:25px}.modal-close{border:0;background:transparent;font-size:30px;color:#777b82;line-height:1;padding:0 4px}
+.form-heading{font-size:15px;font-weight:700;margin:0 0 10px}
+.upload-box{border:1px dashed #dadde1;border-radius:10px;padding:14px;display:flex;align-items:center;gap:18px}
+.cover-preview{width:92px;height:76px;border-radius:7px;background:#f2f2f3;display:grid;place-items:center;font-size:30px;color:#8a8e94;overflow:hidden;flex:none}
+.cover-preview img{display:block;width:100%;height:100%;object-fit:cover}
+.upload-info{min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:8px}
+.upload-info small{color:#9599a0;font-size:11px}
+.modal-rule{border:0;border-top:1px solid #e9e9eb;margin:17px 0}
+.form-subtitle{font-size:12px;color:#92969e;margin:0 0 10px}
+.track-rows{display:flex;flex-direction:column;gap:8px}
+.track-entry{border:1px solid #e5e6e8;border-radius:10px;padding:10px;display:grid;grid-template-columns:minmax(0,1.04fr) minmax(0,.94fr) auto;gap:10px;align-items:center}
+.file-picker{min-width:0;display:flex;align-items:center;gap:9px;padding:8px;border:1px solid #e4e5e7;border-radius:7px;background:white;text-align:left;width:100%;height:61px}
+.file-picker:hover{background:#f7f7f8}.file-note{width:35px;height:39px;flex:none;border-radius:5px;background:#f2f3f4;display:grid;place-items:center;color:#767a82;font-size:23px}
+.file-name{display:block;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:135px}
+.file-types{font-size:9px;color:#8d929b;display:block;margin-top:4px}
+.name-box{display:flex;flex-direction:column;gap:5px;min-width:0}.name-box label{font-size:11px;color:#787d86}.name-box input{width:100%;min-width:0;padding:10px;border:1px solid #dbdee2;border-radius:6px;font-size:12px;height:37px}
+.remove-track{width:25px;height:28px;border:0;background:transparent;color:#a3a6ab;font-size:22px;border-radius:4px}
+.remove-track:hover{background:#f4e6e7;color:#a90022}
+.add-track{margin-top:11px;height:37px;font-size:12px}.helper{font-size:11px;color:#969aa2;margin:8px 0 0}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:17px;border-top:1px solid #ececee;padding-top:17px}
+.modal-error{color:#c11832;font-size:12px;margin:10px 0 0;min-height:14px}
+/* Toast and compact track context menu */
+.toast{position:fixed;bottom:25px;left:50%;transform:translate(-50%,20px);opacity:0;transition:.22s;pointer-events:none;z-index:110;color:white;background:#222529;border-radius:9px;padding:12px 18px;box-shadow:0 10px 24px #0003;font-size:13px;max-width:min(90vw,500px);text-align:center}
+.toast.visible{opacity:1;transform:translate(-50%,0)}
+.context-menu{position:fixed;z-index:70;width:190px;background:#fff;border:1px solid #dddfe3;border-radius:9px;padding:6px;box-shadow:0 12px 32px #0002}
+.context-menu button{width:100%;border:0;background:transparent;text-align:left;font-size:13px;color:#242529;padding:9px 11px;border-radius:5px}
+.context-menu button:hover{background:#f3f3f3}
+@media(max-width:1100px){.header{grid-template-columns:auto 1fr auto}.brand{gap:8px}.record-logo{width:43px;height:43px}.record-logo:before{inset:6px}.record-logo:after{inset:14px}.navtab{min-width:86px}.player-layout{grid-template-columns:minmax(0,1.7fr) minmax(240px,.9fr)}.library-grid{gap:12px}.album-card{padding:8px}}
+@media(max-width:760px){.header{height:115px;grid-template-columns:1fr auto;grid-template-rows:48px 49px;padding:7px 14px}.brand{grid-column:1}.header-icons{grid-column:2}.nav{grid-row:2;grid-column:1 / -1;justify-self:center}.navtab{min-width:73px;height:41px;font-size:12px;padding:0 6px}.toparrow{width:29px;font-size:27px}.viewport{height:calc(100vh - 115px)}.player-layout{grid-template-columns:1fr;min-height:unset;row-gap:10px;padding-top:30px}.deck-area{max-width:760px}.queue-card{max-width:560px}.library-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.library-screen{gap:14px}.library-bottom{flex-wrap:wrap}.search-field{flex-basis:100%}.settings-screen{padding-top:35px}.section-pad{padding:16px}}
+@media(max-width:480px){.wordmark{font-size:24px}.tagline{font-size:7px;letter-spacing:2px}.header-icons{gap:5px}.header-icons button{width:31px;font-size:23px}.library-grid{gap:8px}.album-card{padding:7px}.album-text strong{font-size:12px}.queue-heading strong{font-size:15px}.track-entry{grid-template-columns:1fr 1fr;gap:7px}.remove-track{grid-column:2;justify-self:end;margin-top:-12px}.modal{padding:18px}.upload-box{gap:9px;padding:8px}.cover-preview{width:67px;height:66px}.btn{padding:0 10px}.modal-title h2{font-size:22px}.navtab{min-width:64px}}
+@media(prefers-reduced-motion:reduce){html:focus-within{scroll-behavior:auto}.track,.album-card,.cassette-case,.toast,.reel,.btn{transition:none!important;animation:none!important}.album-card:hover,.cassette-case:hover,.btn:active{transform:none!important}}
+</style>
 </head>
 <body>
-  <header>
-    <div class="brand">RE-WIND<small>A LITTLE LESS DIGITAL. A LITTLE MORE SOUL.</small></div>
-    <nav aria-label="Main navigation">
-      <button type="button" data-view="settings">Settings</button>
-      <button type="button" data-view="player" aria-current="page">Player</button>
-      <button type="button" data-view="library">Library</button>
-    </nav>
-  </header>
-
-  <main>
-    <section id="player">
-      <div class="eyebrow">The listening room / 01</div>
-      <h1>Press play. Stay awhile.</h1>
-      <div class="player-layout">
-        <div>
-          <div class="deck" id="deck">
-            <div class="deck-top">
-              <div class="deck-name">RE-WIND<small>STEREO CASSETTE DECK · RW–80</small></div>
-              <span><i class="led"></i>POWER ON</span>
-            </div>
-            <div class="door">
-              <div class="cassette">
-                <div class="label">
-                  <div class="tape-heading">
-                    <span class="side">A</span>
-                    <span class="tape-title" id="tapeTitle">North Lights</span>
-                    <span>C–60</span>
-                  </div>
-                  <div class="window" aria-hidden="true">
-                    <div class="reel"></div>
-                    <div class="tape-bridge"></div>
-                    <div class="reel"></div>
-                  </div>
-                </div>
-                <div class="cassette-bottom" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
-              </div>
-              <div class="tape-foot"><span>HIGH BIAS · TYPE II</span><span>STEREO / AUTO STOP</span></div>
-            </div>
-            <div class="readout">
-              <span id="mode">■ STOPPED</span>
-              <span id="counter">0000</span>
-              <span id="trackNumber">TAPE 01</span>
-            </div>
-            <div class="transport" aria-label="Playback controls">
-              <button type="button" id="previous" aria-label="Previous tape">|◀<small>PREVIOUS</small></button>
-              <button type="button" id="rewind" aria-label="Rewind 10 seconds">◀◀<small>REWIND</small></button>
-              <button type="button" id="play" class="play" aria-label="Play or pause" aria-pressed="false">▶<small>PLAY / PAUSE</small></button>
-              <button type="button" id="stop" aria-label="Stop">■<small>STOP</small></button>
-              <button type="button" id="forward" aria-label="Forward 10 seconds">▶▶<small>FORWARD</small></button>
-              <button type="button" id="next" aria-label="Next tape">▶|<small>NEXT</small></button>
-            </div>
-            <div class="sliders">
-              <label for="volume">VOLUME</label>
-              <input type="range" id="volume" min="0" max="100" value="70">
-              <button type="button" class="text-button" id="mute" aria-pressed="false">Mute</button>
-              <span style="margin-left:auto">◉ PHONES</span>
-            </div>
-          </div>
-          <div class="seek">
-            <span id="elapsed">0:00</span>
-            <input type="range" id="seek" min="0" max="100" value="0" step=".1" aria-label="Track position" disabled>
-            <span id="duration">0:00</span>
-          </div>
-          <p id="status" role="status" aria-live="polite">Choose a tape and press play. Audio files are optional.</p>
-        </div>
-
-        <aside class="panel">
-          <div class="eyebrow">On the deck</div>
-          <img class="now-cover" id="cover" src="./assets/images/cd1.png" alt="North Lights album cover">
-          <h2 class="now-title" id="nowTitle">North Lights</h2>
-          <p class="muted" id="nowArtist">North Lights</p>
-          <button type="button" class="text-button" id="shuffle" aria-pressed="false">Shuffle off</button>
-          <button type="button" class="text-button" id="repeat" aria-pressed="false">Repeat off</button>
-          <div class="panel-head">
-            <h2>Up next</h2>
-            <button type="button" class="text-button" id="clear">Clear</button>
-          </div>
-          <ul class="queue" id="queue" aria-label="Up next"></ul>
-        </aside>
+<header class="header">
+  <div class="brand" aria-label="RE-WIND, Music Lives On"><span class="record-logo" aria-hidden="true"></span><div><strong class="wordmark">RE-WIND</strong><small class="tagline">MUSIC LIVES ON</small></div></div>
+  <nav class="nav" aria-label="Main navigation">
+    <button class="toparrow" id="navPrev" aria-label="Previous window">‹</button>
+    <button class="navtab" data-window="0">SETTINGS</button>
+    <button class="navtab active" data-window="1">PLAYER</button>
+    <button class="navtab" data-window="2">LIBRARY</button>
+    <button class="toparrow" id="navNext" aria-label="Next window">›</button>
+  </nav>
+  <div class="header-icons"><button aria-label="Settings" title="Settings" id="gearBtn">⚙</button><button aria-label="About RE-WIND" title="About RE-WIND" id="aboutBtn">◉</button></div>
+</header>
+<main class="viewport"><div class="track" id="track">
+  <!-- WINDOW 1: SETTINGS (left) -->
+  <section class="window" id="settingsWindow" aria-label="Settings window">
+    <div class="section-pad settings-screen">
+      <div class="settings-visual" id="settingsVisual">
+        <img src="assets/images/settings-controls.webp" alt="Tape Warmth, Audio Warp, Lo-fi Bit Depth, Wow and Flutter, Noise, and Output Tone control panels">
       </div>
-    </section>
-
-    <section id="library" hidden>
-      <div class="eyebrow">Your collection / 02</div>
-      <h1>Good things, on repeat.</h1>
-      <div class="library-tools">
-        <input id="search" type="search" placeholder="Find a tape…" aria-label="Search library">
-        <span class="muted" id="libraryCount">8 tapes</span>
-      </div>
-      <div class="albums" id="albums"></div>
-    </section>
-
-    <section id="settings" hidden>
-      <div class="eyebrow">Make it yours / 03</div>
-      <h1>Fine-tune your ritual.</h1>
-      <div class="settings-grid">
-        <div class="panel">
-          <h2>Playback</h2>
-          <label class="setting">Playback speed
-            <select id="speed">
-              <option value=".75">0.75×</option>
-              <option value="1" selected>1× · Original</option>
-              <option value="1.25">1.25×</option>
-              <option value="1.5">1.5×</option>
-            </select>
-          </label>
-          <label class="setting">Continue to next tape<input id="autonext" type="checkbox" checked></label>
-          <label class="setting">Animate cassette reels<input id="motion" type="checkbox" checked></label>
-          <p class="note">Keyboard: Space plays or pauses. Left / right arrows rewind or forward 10 seconds when the Player is open.</p>
+      <div id="settingsMessage" class="settings-message" aria-live="polite">Drag a control to adjust the tape sound. Effects are applied during playback.</div>
+    </div>
+  </section>
+  <!-- WINDOW 2: PLAYER (opens first) -->
+  <section class="window" id="playerWindow" aria-label="Player window">
+    <div class="section-pad player-layout">
+      <div class="deck-area">
+        <div class="device" id="cassetteDevice">
+          <img src="assets/images/cassette-player.webp" alt="Black RE-WIND cassette stereo with volume knob, rewind, play, stop, eject, fast forward, twin speakers, and a cassette deck" class="device-art">
+          <button class="volume-control" title="Adjust volume" aria-label="Increase volume" id="volumeBtn"></button>
+          <button class="deck-hit rewind" id="rewButton" aria-label="Rewind ten seconds" title="Rewind"></button>
+          <button class="deck-hit play" id="playButton" aria-label="Play or pause" title="Play / Pause"></button>
+          <button class="deck-hit stop" id="stopButton" aria-label="Stop and keep the current position" title="Stop and keep position"></button>
+          <button class="deck-hit eject" id="ejectButton" aria-label="Eject cassette" title="Eject"></button>
+          <button class="deck-hit forward" id="forwardButton" aria-label="Forward ten seconds" title="Fast forward"></button>
+          <div class="tape-title" id="tapeLabel" aria-hidden="true">Mix Tape</div>
+          <div class="reel left" aria-hidden="true"></div><div class="reel right" aria-hidden="true"></div>
+          <div class="deck-ejected" id="ejectedVisual" hidden>NO TAPE INSERTED</div>
         </div>
-        <div class="panel">
-          <h2>Add your sound</h2>
-          <p class="note">Choose an audio file to attach to the tape currently on the deck. The file stays on your device and is available for this visit.</p>
-          <label class="file-label">Choose audio file<input id="localAudio" type="file" accept="audio/*"></label>
-          <p class="note">Bundled tracks are not included. To add permanent tracks, place track1.mp3 through track8.mp3 in assets/audio/; each number matches its album cover.</p>
-          <p class="note">Album covers load from assets/images/cd1.png through cd8.png. Edit the album list in js/library.js to change titles or audio paths.</p>
-        </div>
+        <div class="player-status-row"><div class="playback-caption" id="playbackStatus" aria-live="polite"><strong>Mix Tape</strong> · select a cassette to load it</div><button class="mute-button" id="muteButton" type="button" aria-label="Mute audio" aria-pressed="false">MUTE</button></div>
       </div>
-    </section>
-  </main>
-
-  <footer>RE-WIND · BUILT FOR THE LONG PLAY</footer>
-  <audio id="audio" preload="none"></audio>
+      <aside class="queue-card" aria-label="Up next cassette queue">
+        <div class="queue-heading"><strong>UP NEXT</strong><span id="queueCount">04 TRACKS</span></div>
+        <div class="cassette-stack" id="cassetteStack"></div>
+        <div class="queue-items" id="queueItems"></div>
+      </aside>
+    </div>
+  </section>
+  <!-- WINDOW 3: LIBRARY (right) -->
+  <section class="window" id="libraryWindow" aria-label="Music library window">
+    <div class="section-pad library-screen">
+      <div class="library-toolbar"><button class="btn btn-dark" id="importBtn"><span class="plus">+</span> IMPORT</button></div>
+      <div class="library-grid" id="libraryGrid"></div>
+      <footer class="library-bottom">
+        <div class="search-field"><span class="search-icon" aria-hidden="true">⌕</span><input id="searchInput" aria-label="Search library" placeholder="Search tracks or artists..."></div>
+        <span class="library-counter" id="libraryCount">08 ALBUMS</span><span class="divider"></span>
+        <div class="view-toggle"><button id="gridView" class="active" aria-label="Grid view">▦</button><button id="listView" aria-label="List view">☰</button></div><span class="divider"></span>
+        <span class="sort-label">SORT</span><select class="sort-select" id="sortSelect" aria-label="Sort library"><option value="custom">DEFAULT</option><option value="az">A–Z</option><option value="za">Z–A</option><option value="recent">NEWEST</option></select>
+      </footer>
+    </div>
+  </section>
+</div></main>
+<!-- Track-by-track import dialog -->
+<div class="modal-scrim" id="modalScrim" hidden>
+  <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalHeading">
+    <div class="modal-title"><h2 id="modalHeading">Import Music</h2><button class="modal-close" id="modalClose" aria-label="Close import dialog">×</button></div>
+    <h3 class="form-heading">Upload Cover Art</h3>
+    <div class="upload-box"><div class="cover-preview" id="coverPreview" aria-label="Cover art preview">▧</div><div class="upload-info"><button class="btn" id="chooseCover" type="button">▧ &nbsp; Choose Cover Image</button><small>JPG, PNG, GIF, WebP (square recommended)</small></div></div>
+    <input type="file" id="coverFile" accept="image/*" hidden>
+    <hr class="modal-rule">
+    <h3 class="form-heading">Tracks</h3><p class="form-subtitle">Add one or more song files for this release.</p>
+    <div class="track-rows" id="trackRows"></div>
+    <button class="btn add-track" id="addTrackBtn" type="button">＋ Add Another Track</button>
+    <p class="helper">Each uploaded track has its own song name. Add more tracks for an album.</p>
+    <p class="modal-error" id="importError" role="alert"></p>
+    <div class="modal-actions"><button class="btn" id="cancelImport">Cancel</button><button class="btn btn-dark" id="confirmImport">Add to Library</button></div>
+  </section>
+</div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<div id="contextMenu" class="context-menu" hidden></div>
+<audio id="audioPlayer" preload="metadata"></audio>
+<script src="js/effect.js"></script>
+<script src="js/app.js"></script>
 </body>
 </html>
