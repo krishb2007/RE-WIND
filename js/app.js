@@ -279,17 +279,17 @@
     effects.set(control.key,value);
     slider.setAttribute('aria-valuetext',percent+' percent');
     if(wrapper)wrapper.style.setProperty('--knob-angle',(-135+value*270)+'deg');
-    $('settingsMessage').textContent=control.name+': '+percent+'%';
+    $('settingsMessage').textContent=control.name+': '+percent+'%';if(control.key==='lofi'){const readout=$('rwBitDepth');if(readout)readout.textContent=String(Math.round(16-value*12))}
     emit('setting-change',{name:control.name,key:control.key,value});
   }
   rotarySettings.forEach(control=>{
     const wrapper=document.createElement('div');wrapper.className='settings-control';
-    wrapper.style.setProperty('--control-x',control.x+'%');wrapper.style.setProperty('--control-y',control.y+'%');wrapper.style.setProperty('--control-size',control.size+'%');
+    wrapper.classList.add('rw-dial');
     wrapper.style.setProperty('--knob-angle',(-135+control.initial*270)+'deg');
     const face=document.createElement('span');face.className='settings-knob-face';face.setAttribute('aria-hidden','true');
     const slider=document.createElement('input');slider.className='settings-hotspot';configureSettingSlider(slider,control);
     slider.addEventListener('input',()=>applySetting(control,slider,wrapper));
-    wrapper.append(face,slider);$('settingsVisual').append(wrapper);
+    wrapper.append(face,slider);const slot=document.querySelector('[data-setting-slot="'+control.key+'"]');if(slot)slot.append(wrapper);
   });
   const toggleSettings=[
     {name:'Tape hiss',key:'hiss',x:40.3,y:84.4,w:6.5,h:18,initial:0},
@@ -298,13 +298,13 @@
   ];
   toggleSettings.forEach(control=>{
     const unit=document.createElement('div');unit.className='noise-unit';
-    unit.style.left=control.x+'%';
+    unit.classList.add('rw-noise-unit');
     const led=document.createElement('span');led.className='noise-led';led.setAttribute('aria-hidden','true');
     const button=document.createElement('button');button.type='button';button.className='noise-switch-button';
     button.setAttribute('role','switch');button.setAttribute('aria-label',control.name+' on or off');
     button.setAttribute('aria-checked','false');button.title=control.name+': off';
     const lever=document.createElement('span');lever.className='noise-lever';lever.setAttribute('aria-hidden','true');
-    button.append(lever);
+    const socket=document.createElement('span');socket.className='rw-switch-socket';socket.setAttribute('aria-hidden','true');button.append(socket,lever);
     const slider=document.createElement('input');slider.className='noise-level';
     configureSettingSlider(slider,control);slider.value='.45';
     slider.setAttribute('aria-label',control.name+' fine tuning');
@@ -322,7 +322,7 @@
     }
     button.addEventListener('click',()=>{enabled=!enabled;update()});
     slider.addEventListener('input',update);
-    unit.append(led,button,slider);$('settingsVisual').append(unit);
+    const on=document.createElement('span');on.className='rw-switch-mark';on.textContent='ON';const off=document.createElement('span');off.className='rw-switch-mark';off.textContent='OFF';const fine=document.createElement('span');fine.className='rw-switch-fine';fine.textContent='INTENSITY';unit.append(on,button,off,fine,slider);const slot=document.querySelector('[data-noise-slot="'+control.key+'"]');if(slot)slot.append(unit);
   });
   // Import dialog: each audio file sits directly beside its own editable song name.
   let coverUrl=null,trackRowId=0,returnFocus=null;
