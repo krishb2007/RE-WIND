@@ -50,8 +50,15 @@ button:disabled{cursor:not-allowed;opacity:.35}
 .deck-hit:hover{background:rgba(255,255,255,.07);box-shadow:0 0 0 1px rgba(255,255,255,.15) inset}
 .deck-hit:active{background:rgba(0,0,0,.17)}
 .deck-hit.rewind{left:31.5%}.deck-hit.play{left:39.9%}.deck-hit.stop{left:48.2%}.deck-hit.eject{left:56.4%}.deck-hit.forward{left:64.9%}
-.volume-control{position:absolute;left:10.1%;top:16.3%;height:16%;width:8%;border:0;background:transparent;z-index:3;border-radius:50%}
-.volume-control:hover{box-shadow:0 0 0 2px #d8d8d8aa}
+.volume-control{--knob-angle:54deg;--knob-press:1;position:absolute;left:9.8%;top:14.3%;width:10%;aspect-ratio:1;height:auto;border:0;background:transparent;z-index:3;border-radius:50%;padding:0;touch-action:none;cursor:grab}
+.volume-control::after{content:"";position:absolute;inset:-6px;border-radius:50%}
+.volume-control:hover .volume-knob-face{filter:brightness(1.07);box-shadow:0 .08em 0 #55585a,0 .16em .2em #0009,inset 0 0 0 .055em #f4f5f5,inset .13em .1em .22em #fff,inset -.13em -.14em .2em #696b6d}
+.volume-control:focus-visible{outline:none}
+.volume-control:focus-visible .volume-knob-face{box-shadow:0 0 0 3px #fff,0 0 0 6px #e32740,0 .08em 0 #494b4d,0 .15em .18em #0008,inset 0 0 0 .055em #eceeef,inset .12em .09em .2em #fff,inset -.12em -.13em .19em #6d7072}
+.volume-control.is-dragging{cursor:grabbing;--knob-press:.97}
+.volume-knob-face{position:absolute;left:50%;top:50%;width:74%;aspect-ratio:1;border-radius:50%;pointer-events:none;border:clamp(2px,.25vw,4px) solid #55585a;background:radial-gradient(circle at 36% 27%,#fff 0 4%,#ffffff8f 5%,transparent 17%),conic-gradient(from 18deg,#747779,#f4f5f5 15%,#9da0a2 31%,#f8f8f8 48%,#86898b 66%,#e9ebec 83%,#747779);box-shadow:0 .08em 0 #494b4d,0 .15em .18em #0008,inset 0 0 0 .055em #eceeef,inset .12em .09em .2em #fff,inset -.12em -.13em .19em #6d7072;transform:translate(-50%,-50%) rotate(var(--knob-angle)) scale(var(--knob-press));transition:transform .13s cubic-bezier(.2,.8,.2,1),filter .15s,box-shadow .15s;will-change:transform}
+.volume-knob-face::before{content:"";position:absolute;left:50%;top:5%;width:8%;height:18%;border-radius:99px;transform:translateX(-50%);background:linear-gradient(90deg,#8e1020,#ff2a44 48%,#8e1020);box-shadow:0 1px 1px #fff8,0 1px 2px #53000a}
+.volume-knob-face::after{content:"";position:absolute;inset:13%;border-radius:50%;border:1px solid #ffffff70;box-shadow:inset .06em .06em .12em #fff8,inset -.07em -.08em .12em #34363855}
 .tape-title{position:absolute;left:39.2%;top:53.9%;width:23.8%;height:8%;display:flex;align-items:center;justify-content:center;text-align:center;font:italic clamp(9px,1.7vw,24px)/1 "Segoe Script",cursive;color:#282329;background:#f4eee3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
 .reel{position:absolute;top:64.4%;width:4.8%;aspect-ratio:1;border:2px dashed #d0d0d0;border-radius:50%;opacity:0;pointer-events:none}
 .reel.left{left:41.7%}.reel.right{left:55.8%}
@@ -123,16 +130,25 @@ button:disabled{cursor:not-allowed;opacity:.35}
 .library-grid.list-mode{grid-template-columns:1fr 1fr}
 .list-mode .album-card{display:grid;grid-template-columns:110px minmax(0,1fr);align-items:center;gap:15px}
 .list-mode .album-meta{margin:0}
-/* Unchanged settings image with accessible interactive hit targets. */
-.settings-screen{padding-top:44px}
+/* Approved console artwork, with separate physical controls above the baked knobs. */
+.settings-screen{padding-top:44px;overflow-x:auto;scrollbar-width:thin}
 .settings-visual{position:relative;width:min(100%,1580px);margin:auto}
 .settings-visual img{width:100%;display:block;height:auto;pointer-events:none;user-select:none}
-.settings-hotspot{position:absolute;appearance:none;padding:0;margin:0;border:0;border-radius:50%;background:transparent;cursor:ew-resize;touch-action:pan-y;accent-color:var(--red)}
+.settings-control{--knob-angle:0deg;position:absolute;left:var(--control-x);top:var(--control-y);width:var(--control-size);aspect-ratio:1;transform:translate(-50%,-50%);z-index:3;border-radius:50%}
+.settings-control::before{content:"";position:absolute;inset:-3%;border-radius:50%;background:#171819;box-shadow:0 .12em .14em #0007,0 0 0 .04em #f6f6f6;pointer-events:none}
+.settings-control:focus-within{outline:3px solid var(--red);outline-offset:4px}
+.settings-knob-face{position:absolute;inset:4%;border-radius:50%;pointer-events:none;border:clamp(2px,.22vw,4px) solid #56585a;background:radial-gradient(circle at 36% 28%,#fff 0 4%,#ffffff8f 5%,transparent 18%),conic-gradient(from 16deg,#7c7f81,#f7f8f8 15%,#a3a6a8 31%,#fafafa 48%,#8a8d8f 66%,#eceeef 83%,#777a7c);box-shadow:0 .07em 0 #424446,0 .14em .16em #0007,inset 0 0 0 .055em #f3f4f4,inset .13em .1em .22em #fff,inset -.13em -.14em .2em #6a6d6f;transform:rotate(var(--knob-angle));transition:transform .13s cubic-bezier(.2,.8,.2,1),filter .15s;will-change:transform}
+.settings-knob-face::before{content:"";position:absolute;left:50%;top:5%;width:8%;height:17%;border-radius:99px;transform:translateX(-50%);background:linear-gradient(90deg,#9f071b,#ff2a42 48%,#9f071b);box-shadow:0 1px 1px #fff9,0 1px 2px #62000d}
+.settings-knob-face::after{content:"";position:absolute;inset:13%;border-radius:50%;border:1px solid #ffffff73;box-shadow:inset .07em .07em .12em #fff8,inset -.08em -.09em .13em #30323455}
+.settings-control:hover .settings-knob-face{filter:brightness(1.06)}
+.settings-hotspot{position:absolute;appearance:none;padding:0;margin:0;border:0;border-radius:50%;background:transparent;cursor:ew-resize;touch-action:none;accent-color:var(--red)}
+.settings-control .settings-hotspot{inset:-7%;width:114%;height:114%;opacity:0;z-index:2}
+.settings-hotspot.settings-toggle{z-index:3}
 .settings-hotspot::-webkit-slider-runnable-track{height:100%;background:transparent}
 .settings-hotspot::-webkit-slider-thumb{appearance:none;width:15px;height:15px;border:0;border-radius:50%;background:transparent}
 .settings-hotspot::-moz-range-track{height:100%;background:transparent}
 .settings-hotspot::-moz-range-thumb{width:11px;height:11px;border:0;border-radius:50%;background:transparent}
-.settings-hotspot:focus-visible{outline:2px solid var(--red);outline-offset:2px;background:#e3274018}
+.settings-hotspot.settings-toggle:focus-visible{outline:2px solid var(--red);outline-offset:2px;background:#e3274018}
 .settings-message{color:#7f838b;font-size:13px;text-align:center;padding-top:14px;min-height:36px}
 /* Import modal */
 .modal-scrim{position:fixed;inset:0;background:#14171b3e;backdrop-filter:blur(2px);z-index:90;display:flex;align-items:center;justify-content:center;padding:18px;overflow:auto}
@@ -165,9 +181,9 @@ button:disabled{cursor:not-allowed;opacity:.35}
 .context-menu button{width:100%;border:0;background:transparent;text-align:left;font-size:13px;color:#242529;padding:9px 11px;border-radius:5px}
 .context-menu button:hover{background:#f3f3f3}
 @media(max-width:1100px){.header{grid-template-columns:auto 1fr auto}.brand{gap:8px}.record-logo{width:43px;height:43px}.record-logo:before{inset:6px}.record-logo:after{inset:14px}.navtab{min-width:86px}.player-layout{grid-template-columns:minmax(0,1.7fr) minmax(240px,.9fr)}.library-grid{gap:12px}.album-card{padding:8px}}
-@media(max-width:760px){.header{height:115px;grid-template-columns:1fr auto;grid-template-rows:48px 49px;padding:7px 14px}.brand{grid-column:1}.header-icons{grid-column:2}.nav{grid-row:2;grid-column:1 / -1;justify-self:center}.navtab{min-width:73px;height:41px;font-size:12px;padding:0 6px}.toparrow{width:29px;font-size:27px}.viewport{height:calc(100vh - 115px)}.player-layout{grid-template-columns:1fr;min-height:unset;row-gap:10px;padding-top:30px}.deck-area{max-width:760px}.queue-card{max-width:560px}.library-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.library-screen{gap:14px}.library-bottom{flex-wrap:wrap}.search-field{flex-basis:100%}.settings-screen{padding-top:35px}.section-pad{padding:16px}}
+@media(max-width:760px){.header{height:115px;grid-template-columns:1fr auto;grid-template-rows:48px 49px;padding:7px 14px}.brand{grid-column:1}.header-icons{grid-column:2}.nav{grid-row:2;grid-column:1 / -1;justify-self:center}.navtab{min-width:73px;height:41px;font-size:12px;padding:0 6px}.toparrow{width:29px;font-size:27px}.viewport{height:calc(100vh - 115px)}.player-layout{grid-template-columns:1fr;min-height:unset;row-gap:10px;padding-top:30px}.deck-area{max-width:760px}.queue-card{max-width:560px}.library-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.library-screen{gap:14px}.library-bottom{flex-wrap:wrap}.search-field{flex-basis:100%}.settings-screen{padding-top:35px}.settings-visual{width:720px;min-width:720px}.section-pad{padding:16px}}
 @media(max-width:480px){.wordmark{font-size:24px}.tagline{font-size:7px;letter-spacing:2px}.header-icons{gap:5px}.header-icons button{width:31px;font-size:23px}.library-grid{gap:8px}.album-card{padding:7px}.album-text strong{font-size:12px}.queue-heading strong{font-size:15px}.track-entry{grid-template-columns:1fr 1fr;gap:7px}.remove-track{grid-column:2;justify-self:end;margin-top:-12px}.modal{padding:18px}.upload-box{gap:9px;padding:8px}.cover-preview{width:67px;height:66px}.btn{padding:0 10px}.modal-title h2{font-size:22px}.navtab{min-width:64px}}
-@media(prefers-reduced-motion:reduce){html:focus-within{scroll-behavior:auto}.track,.album-card,.cassette-case,.deck-drop-target,.tape-reel,.toast,.reel,.btn{transition:none!important;animation:none!important}.album-card:hover,.cassette-case:hover,.cassette-case:hover .tape-reel,.btn:active{transform:none!important}}
+@media(prefers-reduced-motion:reduce){html:focus-within{scroll-behavior:auto}.track,.album-card,.cassette-case,.deck-drop-target,.tape-reel,.toast,.reel,.btn,.volume-knob-face,.settings-knob-face{transition:none!important;animation:none!important}.album-card:hover,.cassette-case:hover,.cassette-case:hover .tape-reel,.btn:active{transform:none!important}}
 
 /* Custom album covers retain the same jewel-case silhouette as the demo artwork. */
 .album-cover-case{display:block;position:relative;width:100%;max-width:306px;margin:0 auto;aspect-ratio:1.21;overflow:hidden;border:3px solid #bfc2c7;border-left:12px solid #4f535a;border-radius:3px;background:#24272b;box-shadow:inset 2px 0 #d6d7d9,0 2px 6px #0002}
@@ -336,7 +352,7 @@ html[data-theme="dark"] .tape-name-field small{color:#bcb6bd}
       <div class="deck-area">
         <div class="device" id="cassetteDevice">
           <img src="assets/images/cassette-player.webp" alt="Black RE-WIND cassette stereo with volume knob, rewind, play, stop, eject, fast forward, twin speakers, and a cassette deck" class="device-art">
-          <button class="volume-control" title="Adjust volume" aria-label="Increase volume" id="volumeBtn"></button>
+          <button class="volume-control" type="button" title="Volume: 70%" aria-label="Volume" role="slider" aria-valuemin="0" aria-valuemax="100" aria-valuenow="70" aria-valuetext="70 percent" aria-orientation="vertical" id="volumeBtn"><span class="volume-knob-face" aria-hidden="true"></span></button>
           <button class="deck-hit rewind" id="rewButton" aria-label="Rewind ten seconds" title="Rewind"></button>
           <button class="deck-hit play" id="playButton" aria-label="Play or pause" title="Play / Pause"></button>
           <button class="deck-hit stop" id="stopButton" aria-label="Stop and keep the current position" title="Stop and keep position"></button>

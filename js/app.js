@@ -161,9 +161,66 @@
     }else{if(audio.src&&Number.isFinite(audio.duration))audio.currentTime=Math.min(audio.duration,audio.currentTime+10);toast('Fast forward ▶▶');emit('forward',{seconds:10})}
   };
   $('ejectButton').onclick=()=>{resetCurrent();activeId=null;audio.removeAttribute('src');audio.load();refreshDeck();toast('Tape ejected');emit('eject',{})};
-  $('volumeBtn').onclick=()=>{volume=volume>=1?.1:Math.min(1,Math.round((volume+.1)*10)/10);audio.volume=volume;$('volumeBtn').setAttribute('aria-label','Increase volume; current volume '+Math.round(volume*100)+' percent');toast('Volume '+Math.round(volume*100)+'%');emit('volume',{value:volume})};
+  const volumeButton=$('volumeBtn');
+  function syncVolumeControl(){
+    const percent=Math.round(volume*100);
+    const angle=-135+volume*270;
+    volumeButton.style.setProperty('--knob-angle',angle+'deg');
+    volumeButton.setAttribute('aria-valuenow',String(percent));
+    volumeButton.setAttribute('aria-valuetext',percent+' percent');
+    volumeButton.title='Volume: '+percent+'%';
+  }
+  function setVolume(value,{announce=true}={}){
+    const next=Math.max(0,Math.min(1,Math.round(value*100)/100));
+    const changed=Math.abs(next-volume)>.0001;
+    volume=next;
+    if(Math.abs(audio.volume-next)>.0001)audio.volume=next;
+    syncVolumeControl();
+    if(changed){if(announce)toast('Volume '+Math.round(next*100)+'%');emit('volume',{value:next})}
+  }
+  let volumeDrag=null;
+  volumeButton.addEventListener('pointerdown',event=>{
+    if(event.button!==0)return;
+    event.preventDefault();
+    volumeButton.focus();
+    volumeDrag={id:event.pointerId,x:event.clientX,y:event.clientY,start:volume,moved:false};
+    volumeButton.classList.add('is-dragging');
+    try{volumeButton.setPointerCapture(event.pointerId)}catch{}
+  });
+  volumeButton.addEventListener('pointermove',event=>{
+    if(!volumeDrag||event.pointerId!==volumeDrag.id)return;
+    const delta=(volumeDrag.y-event.clientY)+(event.clientX-volumeDrag.x);
+    if(Math.abs(delta)>2)volumeDrag.moved=true;
+    setVolume(volumeDrag.start+delta/160,{announce:false});
+  });
+  function finishVolumeDrag(event,cancelled=false){
+    if(!volumeDrag||event.pointerId!==volumeDrag.id)return;
+    const moved=volumeDrag.moved;
+    volumeDrag=null;
+    volumeButton.classList.remove('is-dragging');
+    try{volumeButton.releasePointerCapture(event.pointerId)}catch{}
+    if(cancelled)return;
+    if(!moved)setVolume(volume+.1);
+    else toast('Volume '+Math.round(volume*100)+'%');
+  }
+  volumeButton.addEventListener('pointerup',event=>finishVolumeDrag(event));
+  volumeButton.addEventListener('pointercancel',event=>finishVolumeDrag(event,true));
+  volumeButton.addEventListener('wheel',event=>{
+    event.preventDefault();
+    setVolume(volume+(event.deltaY<0||event.deltaX>0 ? .05 : -.05));
+  },{passive:false});
+  volumeButton.addEventListener('keydown',event=>{
+    const steps={ArrowUp:.05,ArrowRight:.05,ArrowDown:-.05,ArrowLeft:-.05,PageUp:.1,PageDown:-.1};
+    let next;
+    if(event.key in steps)next=volume+steps[event.key];
+    else if(event.key==='Home')next=0;
+    else if(event.key==='End')next=1;
+    else if(event.key==='Enter'||event.key===' ')next=volume+.1;
+    else return;
+    event.preventDefault();event.stopPropagation();setVolume(next);
+  });
   $('muteButton').onclick=()=>{audio.muted=!audio.muted;updateMuteButton();emit('mute',{muted:audio.muted})};
-  audio.addEventListener('volumechange',updateMuteButton);
+  audio.addEventListener('volumechange',()=>{volume=audio.volume;syncVolumeControl();updateMuteButton()});
   audio.addEventListener('playing',()=>{playing=true;effects.setPlaying(true);refreshDeck()});
   audio.addEventListener('pause',()=>{playing=false;effects.setPlaying(false);refreshDeck()});
   audio.addEventListener('error',()=>{playing=false;effects.setPlaying(false);refreshDeck();if(audio.error)toast('This audio file could not be loaded. Try another file.')});
@@ -180,9 +237,49 @@
       if(currentSong()?.source)play();
     }else refreshDeck();
   };
-  // Settings screenshot uses click-target overlays, without re-drawing your approved console.
-  const settingsControls=[['Tape warmth','warmth',10.5,29,10,24,0],['Audio warp','warp',44.8,29,10,24,.5],['Lo-fi / bit depth','lofi',75.2,29,10,24,0],['Wow','wow',10.5,82,10,22,0],['Flutter','flutter',27,82,10,22,0],['Tape hiss','hiss',42.2,82,8,18,0],['Vinyl noise','vinyl',52.2,82,8,18,0],['Hum','hum',62,82,8,18,0],['Bass','bass',74,82,8,18,.5],['Mid','mid',84,82,8,18,.5],['Treble','treble',94,82,8,18,.5]];
-  settingsControls.forEach(([name,key,x,y,w,h,initial])=>{const slider=document.createElement('input');slider.type='range';slider.min='0';slider.max='1';slider.step='.01';slider.value=String(initial);slider.className='settings-hotspot';slider.style.left=(x-w/2)+'%';slider.style.top=(y-h/2)+'%';slider.style.width=w+'%';slider.style.height=h+'%';slider.title=name;slider.setAttribute('aria-label',name);slider.setAttribute('aria-valuetext',Math.round(initial*100)+' percent');slider.addEventListener('input',()=>{const value=Number(slider.value);effects.set(key,value);slider.setAttribute('aria-valuetext',Math.round(value*100)+' percent');$('settingsMessage').textContent=name+': '+Math.round(value*100)+'%';emit('setting-change',{name,key,value})});$('settingsVisual').append(slider)});
+  // Separate rotary faces cover the baked-in knobs, while fixed hit areas prevent overlap.
+  const rotarySettings=[
+    {name:'Tape warmth',key:'warmth',x:8,y:29,size:8.5,initial:0},
+    {name:'Audio warp',key:'warp',x:43.6,y:29,size:8.5,initial:.5},
+    {name:'Lo-fi / bit depth',key:'lofi',x:74.5,y:29,size:8.5,initial:0},
+    {name:'Wow',key:'wow',x:8.55,y:82,size:7.7,initial:0},
+    {name:'Flutter',key:'flutter',x:24.95,y:82,size:7.7,initial:0},
+    {name:'Bass',key:'bass',x:73.25,y:82.6,size:6.4,initial:.5},
+    {name:'Mid',key:'mid',x:83.97,y:82.6,size:6.4,initial:.5},
+    {name:'Treble',key:'treble',x:94.42,y:82.6,size:6.4,initial:.5}
+  ];
+  function configureSettingSlider(slider,control){
+    slider.type='range';slider.min='0';slider.max='1';slider.step='.01';slider.value=String(control.initial);
+    slider.title=control.name;slider.dataset.effect=control.key;slider.setAttribute('aria-label',control.name);
+    slider.setAttribute('aria-valuetext',Math.round(control.initial*100)+' percent');
+  }
+  function applySetting(control,slider,wrapper){
+    const value=Number(slider.value),percent=Math.round(value*100);
+    effects.set(control.key,value);
+    slider.setAttribute('aria-valuetext',percent+' percent');
+    if(wrapper)wrapper.style.setProperty('--knob-angle',(-135+value*270)+'deg');
+    $('settingsMessage').textContent=control.name+': '+percent+'%';
+    emit('setting-change',{name:control.name,key:control.key,value});
+  }
+  rotarySettings.forEach(control=>{
+    const wrapper=document.createElement('div');wrapper.className='settings-control';
+    wrapper.style.setProperty('--control-x',control.x+'%');wrapper.style.setProperty('--control-y',control.y+'%');wrapper.style.setProperty('--control-size',control.size+'%');
+    wrapper.style.setProperty('--knob-angle',(-135+control.initial*270)+'deg');
+    const face=document.createElement('span');face.className='settings-knob-face';face.setAttribute('aria-hidden','true');
+    const slider=document.createElement('input');slider.className='settings-hotspot';configureSettingSlider(slider,control);
+    slider.addEventListener('input',()=>applySetting(control,slider,wrapper));
+    wrapper.append(face,slider);$('settingsVisual').append(wrapper);
+  });
+  const toggleSettings=[
+    {name:'Tape hiss',key:'hiss',x:40.3,y:84.4,w:6.5,h:18,initial:0},
+    {name:'Vinyl noise',key:'vinyl',x:50.63,y:84.4,w:6.5,h:18,initial:0},
+    {name:'Hum',key:'hum',x:60.77,y:84.4,w:6.5,h:18,initial:0}
+  ];
+  toggleSettings.forEach(control=>{
+    const slider=document.createElement('input');slider.className='settings-hotspot settings-toggle';configureSettingSlider(slider,control);
+    slider.style.left=(control.x-control.w/2)+'%';slider.style.top=(control.y-control.h/2)+'%';slider.style.width=control.w+'%';slider.style.height=control.h+'%';
+    slider.addEventListener('input',()=>applySetting(control,slider));$('settingsVisual').append(slider);
+  });
   // Import dialog: each audio file sits directly beside its own editable song name.
   let coverUrl=null,trackRowId=0,returnFocus=null;
   function openModal(){hideMenu();returnFocus=document.activeElement;$('modalScrim').hidden=false;document.body.style.overflow='hidden';$('importError').textContent='';$('trackRows').replaceChildren();$('tapeTitle').value='';$('coverFile').value='';if(coverUrl)URL.revokeObjectURL(coverUrl);coverUrl=null;$('coverPreview').textContent='▧';addRow();addRow();addRow();$('modalClose').focus()}
@@ -219,6 +316,6 @@
     emit('library-import',{tracks:[imported],tape:imported});
   };
   window.addEventListener('beforeunload',()=>{if(coverUrl)URL.revokeObjectURL(coverUrl);const urls=new Set(library.flatMap(track=>[track.cover,track.source,...songs(track).map(song=>song.source)]).filter(url=>url?.startsWith('blob:')));urls.forEach(url=>URL.revokeObjectURL(url))});
-  updateMuteButton();
+  syncVolumeControl();updateMuteButton();
   navigate(1);renderQueue();renderLibrary();refreshDeck();
 })();
