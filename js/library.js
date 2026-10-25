@@ -11,8 +11,8 @@ const musicLibrary = [
     album: "North Lights",
     genre: "Synth-pop",
     duration: "",
-    cover: "./assets/images/cd1.png",
-    audioUrl: "./assets/audio/track1.mp3"
+    cover: "./assets/images/case-01.webp",
+    audioUrl: null
   },
   {
     id: 2,
@@ -21,8 +21,8 @@ const musicLibrary = [
     album: "Petal Static",
     genre: "Dream pop",
     duration: "",
-    cover: "./assets/images/cd2.png",
-    audioUrl: "./assets/audio/track2.mp3"
+    cover: "./assets/images/case-02.webp",
+    audioUrl: null
   },
   {
     id: 3,
@@ -31,8 +31,8 @@ const musicLibrary = [
     album: "Orbital Drift",
     genre: "Synth-pop",
     duration: "",
-    cover: "./assets/images/cd3.png",
-    audioUrl: "./assets/audio/track3.mp3"
+    cover: "./assets/images/case-03.webp",
+    audioUrl: null
   },
   {
     id: 4,
@@ -41,8 +41,8 @@ const musicLibrary = [
     album: "Midnight Lanes",
     genre: "Indie pop",
     duration: "",
-    cover: "./assets/images/cd4.png",
-    audioUrl: "./assets/audio/track4.mp3"
+    cover: "./assets/images/case-04.webp",
+    audioUrl: null
   },
   {
     id: 5,
@@ -51,8 +51,8 @@ const musicLibrary = [
     album: "Tides",
     genre: "Ambient",
     duration: "",
-    cover: "./assets/images/cd5.png",
-    audioUrl: "./assets/audio/track5.mp3"
+    cover: "./assets/images/case-05.webp",
+    audioUrl: null
   },
   {
     id: 6,
@@ -61,8 +61,8 @@ const musicLibrary = [
     album: "Fracture Plans",
     genre: "Electronic",
     duration: "",
-    cover: "./assets/images/cd6.png",
-    audioUrl: "./assets/audio/track6.mp3"
+    cover: "./assets/images/case-06.webp",
+    audioUrl: null
   },
   {
     id: 7,
@@ -71,8 +71,8 @@ const musicLibrary = [
     album: "Slow Rooms",
     genre: "Lo-fi",
     duration: "",
-    cover: "./assets/images/cd7.png",
-    audioUrl: "./assets/audio/track7.mp3"
+    cover: "./assets/images/case-07.webp",
+    audioUrl: null
   },
   {
     id: 8,
@@ -81,8 +81,8 @@ const musicLibrary = [
     album: "Vacant Frequencies",
     genre: "Synth-pop",
     duration: "",
-    cover: "./assets/images/cd8.png",
-    audioUrl: "./assets/audio/track8.mp3"
+    cover: "./assets/images/case-08.webp",
+    audioUrl: null
   }
 ];
 
@@ -346,7 +346,7 @@ function selectSong(songId) {
 
   if (!song) return null;
 
-  window.dispatchEvent(
+  document.dispatchEvent(
     new CustomEvent("rewind:select-song", {
       detail: { song }
     })
