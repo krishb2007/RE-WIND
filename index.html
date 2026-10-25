@@ -713,6 +713,26 @@ html[data-theme="dark"] .drag-tip{color:#bab4bc}
   #volumeBtn.volume-control::after{transition:none}
 }
 
+
+/* Discreet on/off control for mechanical cassette sound effects. */
+.sfx-toggle{
+  flex:none;min-height:30px;padding:7px 11px;
+  border:1px solid #d2c9b7;border-radius:8px;
+  background:linear-gradient(180deg,#fff6ea,#f3eee3);
+  color:#694b34;font-size:11px;font-weight:800;letter-spacing:.055em;
+  box-shadow:0 2px 4px #0000000b;
+}
+.sfx-toggle:hover{background:#f2e3c9}
+.sfx-toggle[aria-pressed="false"]{
+  background:transparent;border-color:#dfe0e3;color:#8b8e96;box-shadow:none;
+}
+html[data-theme="dark"] .sfx-toggle{
+  background:linear-gradient(#574537,#3e342f);border-color:#84715e;color:#ffe9c5;
+}
+html[data-theme="dark"] .sfx-toggle[aria-pressed="false"]{
+  background:#303138;border-color:#51515b;color:#aaa9b1;
+}
+@media(max-width:480px){.sfx-toggle{padding:6px 8px;font-size:10px}}
 </style>
 </head>
 <body>
@@ -808,7 +828,7 @@ html[data-theme="dark"] .drag-tip{color:#bab4bc}
           <div class="reel left" aria-hidden="true"></div><div class="reel right" aria-hidden="true"></div>
           <div class="deck-ejected" id="ejectedVisual" hidden>NO TAPE INSERTED</div>
         </div>
-        <div class="player-status-row"><div class="playback-caption" id="playbackStatus" aria-live="polite"><strong>Mix Tape</strong> · select a cassette to load it</div><button class="mute-button" id="muteButton" type="button" aria-label="Mute audio" aria-pressed="false">MUTE</button></div>
+        <div class="player-status-row"><div class="playback-caption" id="playbackStatus" aria-live="polite"><strong>Mix Tape</strong> · select a cassette to load it</div><button class="mute-button" id="muteButton" type="button" aria-label="Mute audio" aria-pressed="false">MUTE</button><button class="sfx-toggle" id="cassetteSfxToggle" type="button" aria-label="Disable cassette sound effects" aria-pressed="true" title="Turn cassette sound effects off">SFX ON</button></div>
       </div>
       <aside class="queue-card" aria-label="Up next cassette queue">
         <div class="queue-heading"><strong>UP NEXT</strong><span id="queueCount">00 TAPES</span></div>
@@ -875,6 +895,7 @@ html[data-theme="dark"] .drag-tip{color:#bab4bc}
 </script>
 <script src="js/effect.js"></script>
 <script src="js/app.js"></script>
+<script src="js/cassette-sfx.js"></script>
   
 </body>
 </html>
