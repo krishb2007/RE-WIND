@@ -733,6 +733,64 @@ html[data-theme="dark"] .sfx-toggle[aria-pressed="false"]{
   background:#303138;border-color:#51515b;color:#aaa9b1;
 }
 @media(max-width:480px){.sfx-toggle{padding:6px 8px;font-size:10px}}
+
+/* Dedicated cassette track-skip controls. These are separate from the existing
+   REW / FF transport buttons so seeking still works on multi-song tapes. */
+.deck-song-button{
+  position:absolute;
+  top:24.8%;
+  width:5.7%;
+  height:7.5%;
+  z-index:5;
+  border:1px solid #101114;
+  border-top-color:#5b5e64;
+  border-radius:3px 3px 6px 6px;
+  padding:0;
+  color:#f4f4f5;
+  background:linear-gradient(180deg,#444950 0%,#282b30 19%,#15171c 83%,#101215 100%);
+  box-shadow:inset 0 1px 2px #ffffff3d,inset -2px -2px 3px #0009,0 3px 0 #07080a,0 5px 5px #0008;
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .1s ease,box-shadow .1s ease,filter .1s ease,opacity .15s ease;
+  -webkit-tap-highlight-color:transparent;
+}
+.deck-song-button.previous-song{left:24.7%}
+.deck-song-button.next-song{left:76.4%}
+.deck-song-button::before{
+  content:attr(data-label);
+  position:absolute;
+  bottom:157%;
+  left:50%;
+  transform:translateX(-50%);
+  color:#f9eceb;
+  text-shadow:0 1px 2px #5f2024;
+  font-weight:850;
+  font-size:clamp(7px,.7vw,11px);
+  line-height:1.1;
+  letter-spacing:.07em;
+  pointer-events:none;
+}
+.deck-song-button .song-arrow{
+  display:block;
+  font-size:clamp(11px,1.32vw,19px);
+  font-weight:900;
+  line-height:1;
+  text-shadow:0 1px 2px #000b;
+  pointer-events:none;
+}
+.deck-song-button:not(:disabled):hover{filter:brightness(1.2)}
+.deck-song-button:not(:disabled):active{
+  transform:translateY(3px);
+  box-shadow:inset 0 3px 5px #000b,0 1px 1px #0009;
+}
+.deck-song-button:focus-visible{outline:2px solid #fff;outline-offset:4px}
+.deck-song-button:disabled{
+  opacity:.58;cursor:not-allowed;
+}
+@media(prefers-reduced-motion:reduce){
+  .deck-song-button{transition:none}
+}
+
 </style>
 </head>
 <body>
@@ -818,11 +876,13 @@ html[data-theme="dark"] .sfx-toggle[aria-pressed="false"]{
         <div class="device" id="cassetteDevice">
           <img src="assets/images/cassette-player.webp" alt="Black RE-WIND cassette stereo with volume knob, rewind, play, stop, eject, fast forward, twin speakers, and a cassette deck" class="device-art">
           <button class="volume-control" type="button" title="Volume: 70%" aria-label="Volume" role="slider" aria-valuemin="0" aria-valuemax="100" aria-valuenow="70" aria-valuetext="70 percent" aria-orientation="vertical" id="volumeBtn"><span class="volume-knob-face" aria-hidden="true"></span></button>
+          <button class="deck-song-button previous-song" id="previousSongButton" type="button" data-label="PREV" title="Load a mixtape to skip songs" aria-label="Previous song" disabled><span class="song-arrow" aria-hidden="true">◀❙</span></button>
           <button class="deck-hit rewind" id="rewButton" aria-label="Rewind ten seconds" title="Rewind"></button>
           <button class="deck-hit play" id="playButton" aria-label="Play or pause" title="Play / Pause"></button>
           <button class="deck-hit stop" id="stopButton" aria-label="Stop and keep the current position" title="Stop and keep position"></button>
           <button class="deck-hit eject" id="ejectButton" aria-label="Eject cassette" title="Eject"></button>
           <button class="deck-hit forward" id="forwardButton" aria-label="Forward ten seconds" title="Fast forward"></button>
+          <button class="deck-song-button next-song" id="nextSongButton" type="button" data-label="NEXT" title="Load a mixtape to skip songs" aria-label="Next song" disabled><span class="song-arrow" aria-hidden="true">❙▶</span></button>
           <div class="deck-drop-target" id="deckDropTarget" aria-hidden="true"><span>DROP TAPE TO INSERT</span></div>
           <div class="tape-title" id="tapeLabel" aria-hidden="true">Mix Tape</div>
           <div class="reel left" aria-hidden="true"></div><div class="reel right" aria-hidden="true"></div>
