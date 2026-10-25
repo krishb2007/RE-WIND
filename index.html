@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#1c1c1d">
 <title>RE-WIND | Music Lives On</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{--ink:#18191b;--ink2:#26272a;--red:#e32740;--rose:#fde9ec;--paper:#fff;--gray:#777b83;--line:#e7e8e9;--soft:#f6f6f6;--muted:#9ca0a5;--radius:14px;--shadow:0 10px 28px rgba(15,16,18,.045)}
 *{box-sizing:border-box}
@@ -15,24 +18,30 @@ button{cursor:pointer}
 button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #e3274088;outline-offset:3px}
 button:disabled{cursor:not-allowed;opacity:.35}
 [hidden]{display:none!important}
-/* The main navigation is shared by all three screens. */
-.header{height:87px;background:#1b1b1d;color:white;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:18px;padding:0 clamp(17px,2vw,37px);position:relative;z-index:30}
-.brand{display:flex;align-items:center;gap:17px;min-width:0;white-space:nowrap}
-.record-logo{width:59px;height:59px;border:2px solid white;border-radius:50%;position:relative;flex:none}
-.record-logo:before,.record-logo:after{content:"";position:absolute;border:2px solid #fff;border-radius:50%}
-.record-logo:before{inset:8px}.record-logo:after{inset:19px}
-.wordmark{display:block;font-size:clamp(22px,2.55vw,40px);font-weight:900;letter-spacing:-.9px;line-height:.89}
-.tagline{display:block;font-size:clamp(7px,.65vw,11px);letter-spacing:clamp(2px,.3vw,5px);padding-left:4px;margin-top:9px;font-weight:600}
-.nav{display:flex;align-items:center;gap:clamp(1px,.7vw,12px);justify-self:center}
-.navtab,.toparrow{height:46px;color:#f8f8f8;background:transparent;border:0;font-size:14px;letter-spacing:.04em;font-weight:600}
-.navtab{min-width:clamp(83px,11.3vw,200px);padding:0 15px;position:relative;border-radius:10px}
-.navtab.active{background:linear-gradient(180deg,#2e2e30,#272023)}
-.navtab.active:after{content:"";width:56px;height:2px;position:absolute;bottom:0;left:50%;transform:translateX(-50%);background:var(--red)}
-.toparrow{width:36px;font-size:33px;font-weight:300;line-height:1}
-.navtab:hover,.toparrow:hover:not(:disabled){background-color:#333437}
-.header-icons{display:flex;align-items:center;gap:18px;justify-self:end}
-.header-icons button{width:37px;height:37px;display:grid;place-items:center;background:transparent;color:white;border:0;padding:0;font-size:29px}
-.header-icons button:hover{opacity:.75}
+/* An understated hi-fi label header: cassette stamp, narrow wordmark, and numbered transport tabs. */
+.header{height:87px;background:#1d201f;color:#f2ede3;display:grid;grid-template-columns:minmax(198px,1fr) auto minmax(158px,1fr);align-items:center;gap:15px;padding:0 clamp(16px,2.1vw,36px);position:relative;z-index:30;border-bottom:1px solid #3a3b36;box-shadow:0 3px 16px #0e100f12}
+.header::before{content:"";position:absolute;left:0;bottom:0;width:100%;height:1px;background:#ffffff09;pointer-events:none}
+.brand{display:flex;align-items:center;gap:12px;min-width:0;white-space:nowrap}
+.brand-mark{display:flex;align-items:center;justify-content:center;width:47px;height:47px;flex:none;color:#e7e0d4;border:1px solid #6a6862;border-radius:4px;position:relative}
+.brand-mark::after{content:"";position:absolute;bottom:-1px;left:8px;right:8px;height:2px;background:#d9705f}
+.brand-mark svg{width:34px;height:34px;display:block}
+.brand-copy{display:flex;flex-direction:column;justify-content:center;min-width:0}
+.wordmark{display:block;color:#f6f0e4;font-family:"Barlow Condensed","Arial Narrow",Impact,sans-serif;font-size:clamp(27px,2.55vw,39px);font-style:normal;font-weight:800;letter-spacing:.055em;line-height:.92}
+.tagline{display:block;font-family:"IBM Plex Mono","Courier New",monospace;font-size:clamp(7px,.63vw,9px);letter-spacing:.16em;color:#aaa89f;margin-top:8px;font-weight:500}
+.nav{display:flex;align-items:center;gap:2px;justify-self:center;height:100%}
+.navtab,.toparrow{height:46px;color:#babbb5;background:transparent;border:0;font-family:"IBM Plex Mono","Courier New",monospace;transition:color .16s,background-color .16s}
+.navtab{min-width:clamp(98px,9.4vw,145px);display:flex;align-items:center;justify-content:center;gap:8px;padding:0 12px;position:relative;border-radius:0;font-size:11px;letter-spacing:.11em;font-weight:600}
+.nav-index{font-size:9px;letter-spacing:0;font-weight:400;color:#777c76}
+.navtab.active{background:transparent;color:#f5eee3}
+.navtab.active .nav-index{color:#dc856c}
+.navtab.active::after{content:"";width:calc(100% - 32px);height:2px;position:absolute;bottom:6px;left:16px;transform:none;background:#d9705f}
+.navtab:hover:not(.active),.toparrow:hover:not(:disabled){background:#ffffff09;color:#f4ede2}
+.toparrow{width:29px;font-family:Arial,sans-serif;font-size:26px;font-weight:300;line-height:1;padding:0}
+.toparrow:disabled{opacity:.24}
+.header-icons{display:flex;align-items:center;gap:8px;justify-self:end}
+.header-icons button{width:33px;height:35px;display:grid;place-items:center;background:transparent;color:#bcbdb7;border:0;padding:0;font-size:19px;border-radius:4px}
+.header-icons button:hover{background:#ffffff0d;color:#f4efe6;opacity:1}
+.header-icons .header-icon{width:19px;height:19px;stroke:currentColor;stroke-width:1.55;fill:none;stroke-linecap:round;stroke-linejoin:round}
 /* Sliding windows */
 .viewport{overflow:hidden;width:100%;height:calc(100vh - 87px);min-height:610px}
 .track{width:300%;height:100%;display:flex;transform:translateX(-33.333333%);transition:transform .46s cubic-bezier(.2,.77,.2,1)}
@@ -195,8 +204,8 @@ html[data-theme="dark"] .queue-remove:hover,html[data-theme="dark"] .queue-remov
 .album-cover-case{display:block;position:relative;width:100%;max-width:306px;margin:0 auto;aspect-ratio:1.21;overflow:hidden;border:3px solid #bfc2c7;border-left:12px solid #4f535a;border-radius:3px;background:#24272b;box-shadow:inset 2px 0 #d6d7d9,0 2px 6px #0002}
 .album-cover-case .album-cover{display:block;width:100%;max-width:none;height:100%;margin:0;aspect-ratio:auto;object-fit:cover;border:0;box-shadow:none}
 .album-cover-case::after{content:"";position:absolute;inset:0;pointer-events:none;border:2px solid #ffffff55;box-shadow:inset 0 3px #ffffff30,inset 0 -3px #17191a33;background:linear-gradient(113deg,#ffffff30 0%,transparent 24%,transparent 78%,#ffffff18 100%)}
-.theme-toggle{width:auto!important;min-width:85px!important;height:36px!important;padding:0 11px!important;border:1px solid #67676c!important;border-radius:18px!important;font-size:12px!important;display:flex!important;align-items:center;justify-content:center;gap:7px;white-space:nowrap}
-.theme-toggle:hover{background:#ffffff16!important}
+.theme-toggle{width:auto!important;min-width:76px!important;height:34px!important;padding:0 9px!important;border:1px solid #50534e!important;border-radius:4px!important;font-family:"IBM Plex Mono","Courier New",monospace!important;font-size:10px!important;font-weight:500!important;letter-spacing:.05em!important;display:flex!important;align-items:center;justify-content:center;gap:7px;white-space:nowrap}
+.theme-toggle:hover{background:#ffffff0e!important;border-color:#82817a!important}
 html[data-theme="dark"]{color-scheme:dark;--ink:#ede9e4;--ink2:#e4dfd9;--paper:#18191d;--gray:#c6bec0;--line:#393940;--soft:#25262b;--muted:#a7a6ad;--rose:#542630;--shadow:0 12px 32px #0005}
 html[data-theme="dark"] body{background:radial-gradient(circle at 14% 18%,#30232c 0,transparent 31rem),radial-gradient(circle at 86% 78%,#192d33 0,transparent 34rem),linear-gradient(145deg,#19191e,#111217 64%,#191821)}
 html[data-theme="dark"] .window{background:linear-gradient(150deg,#1b1d21f5,#16171bf1)}
@@ -791,19 +800,73 @@ html[data-theme="dark"] .sfx-toggle[aria-pressed="false"]{
   .deck-song-button{transition:none}
 }
 
+/* Rebalanced top bar proportions at laptop/tablet/phone sizes. */
+@media(max-width:1100px){
+  .header{grid-template-columns:minmax(166px,1fr) auto minmax(145px,1fr);gap:6px;padding:0 15px}
+  .brand{gap:8px}
+  .brand-mark{width:40px;height:40px}
+  .brand-mark svg{width:30px;height:30px}
+  .wordmark{font-size:clamp(26px,2.9vw,34px)}
+  .navtab{min-width:90px;padding:0 7px;font-size:10px;gap:5px}
+  .header-icons{gap:3px}
+}
+@media(max-width:760px){
+  .header{height:115px;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:48px 49px;padding:7px 14px;gap:0}
+  .brand{grid-column:1;gap:9px}
+  .brand-mark{width:37px;height:37px}
+  .brand-mark svg{width:27px;height:27px}
+  .wordmark{font-size:29px}
+  .tagline{font-size:7px;letter-spacing:.14em;margin-top:5px}
+  .header-icons{grid-column:2;gap:2px}
+  .nav{grid-row:2;grid-column:1/-1;justify-self:stretch;justify-content:center;gap:0;border-top:1px solid #ffffff12}
+  .navtab{flex:1;min-width:0;max-width:120px;height:43px;font-size:10px;padding:0 6px;gap:5px}
+  .navtab.active::after{bottom:1px;width:calc(100% - 24px);left:12px}
+  .toparrow{width:26px;font-size:23px}
+}
+@media(max-width:380px){
+  .header{padding:7px 10px}
+  .brand-mark{width:34px;height:34px}
+  .brand-mark svg{width:25px;height:25px}
+  .wordmark{font-size:26px}
+  .header-icons button{width:27px}
+  .theme-toggle{min-width:62px!important;padding:0 5px!important;gap:4px!important}
+  .navtab{font-size:9px;letter-spacing:.04em;gap:3px}
+  .nav-index{font-size:8px}
+}
 </style>
 </head>
 <body>
 <header class="header">
-  <div class="brand" aria-label="RE-WIND, Music Lives On"><span class="record-logo" aria-hidden="true"></span><div><strong class="wordmark">RE-WIND</strong><small class="tagline">MUSIC LIVES ON</small></div></div>
+  <div class="brand" aria-label="RE-WIND, Music Lives On">
+    <span class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 44 44" focusable="false">
+        <rect x="3.5" y="9" width="37" height="26" rx="3" stroke="currentColor" fill="none" stroke-width="1.6"/>
+        <path d="M7 27.5h30M12 32h20M15 13h14" stroke="currentColor" stroke-width="1.25" fill="none"/>
+        <circle cx="14.5" cy="20" r="4.1" fill="none" stroke="currentColor" stroke-width="1.7"/>
+        <circle cx="29.5" cy="20" r="4.1" fill="none" stroke="currentColor" stroke-width="1.7"/>
+        <circle cx="14.5" cy="20" r="1.15" fill="#d9705f"/>
+        <circle cx="29.5" cy="20" r="1.15" fill="#d9705f"/>
+        <path d="M17.9 22.7 20 26h4l2.1-3.3" stroke="#d9705f" stroke-width="1.4" fill="none"/>
+      </svg>
+    </span>
+    <div class="brand-copy"><strong class="wordmark">RE-WIND</strong><small class="tagline">MUSIC LIVES ON</small></div>
+  </div>
   <nav class="nav" aria-label="Main navigation">
     <button class="toparrow" id="navPrev" aria-label="Previous window">‹</button>
-    <button class="navtab" data-window="0">SETTINGS</button>
-    <button class="navtab active" data-window="1">PLAYER</button>
-    <button class="navtab" data-window="2">LIBRARY</button>
+    <button class="navtab" data-window="0"><span class="nav-index" aria-hidden="true">01</span>SETTINGS</button>
+    <button class="navtab active" data-window="1"><span class="nav-index" aria-hidden="true">02</span>PLAYER</button>
+    <button class="navtab" data-window="2"><span class="nav-index" aria-hidden="true">03</span>LIBRARY</button>
     <button class="toparrow" id="navNext" aria-label="Next window">›</button>
   </nav>
-  <div class="header-icons"><button aria-label="Settings" title="Settings" id="gearBtn">⚙</button><button aria-label="Toggle dark mode" title="Switch to dark mode" id="themeToggle" class="theme-toggle" type="button" aria-pressed="false"><span aria-hidden="true">☾</span><span id="themeLabel">Dark</span></button><button aria-label="About RE-WIND" title="About RE-WIND" id="aboutBtn">◉</button></div>
+  <div class="header-icons">
+    <button aria-label="Settings" title="Settings" id="gearBtn">
+      <svg class="header-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="2.4" fill="#1d201f"/><circle cx="16" cy="17" r="2.4" fill="#1d201f"/></svg>
+    </button>
+    <button aria-label="Toggle dark mode" title="Switch to dark mode" id="themeToggle" class="theme-toggle" type="button" aria-pressed="false"><span aria-hidden="true">☾</span><span id="themeLabel">Dark</span></button>
+    <button aria-label="About RE-WIND" title="About RE-WIND" id="aboutBtn">
+      <svg class="header-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 10.5v5.5M12 7.5v.2"/></svg>
+    </button>
+  </div>
 </header>
 <main class="viewport"><div class="track" id="track">
   <!-- WINDOW 1: SETTINGS (left) -->
