@@ -279,6 +279,12 @@
   $('listView').onclick=()=>{$('libraryGrid').classList.add('list-mode');$('listView').classList.add('active');$('gridView').classList.remove('active')};
   function refreshDeck(){
     const tape=item(activeId),song=currentSong(),count=songs(tape).length;
+    // Keep track controls visible but disabled for single-song tapes.
+    const previous=$('previousSongButton'),next=$('nextSongButton');
+    previous.disabled=count<=1||activeSongIndex<=0;
+    next.disabled=count<=1||activeSongIndex>=count-1;
+    previous.title=count<=1?'Only available for multi-song tapes':previous.disabled?'First song on this tape':'Previous song';
+    next.title=count<=1?'Only available for multi-song tapes':next.disabled?'Last song on this tape':'Next song';
     $('tapeLabel').textContent=tape?tape.title:'Mix Tape';
     $('ejectedVisual').hidden=!!tape;
     $('playerWindow').classList.toggle('is-playing',playing);
@@ -337,16 +343,27 @@
     if(shouldPlay)play();
     return true;
   }
+  // Transport controls always seek within the current song, even on mixtapes.
   $('rewButton').onclick=()=>{
-    if(songs(item(activeId)).length>1){
-      if(!moveSong(-1))toast('First song on this tape');
-    }else{if(audio.src)audio.currentTime=Math.max(0,audio.currentTime-10);toast('Rewind ◀◀');emit('rewind',{seconds:10})}
+    if(currentSong()?.source){
+      const now=Number(audio.currentTime)||0;
+      audio.currentTime=Math.max(0,now-10);
+      rememberPosition();
+    }
+    toast('Rewind 10 seconds ◀◀');emit('rewind',{seconds:10});
   };
   $('forwardButton').onclick=()=>{
-    if(songs(item(activeId)).length>1){
-      if(!moveSong(1))toast('Last song on this tape');
-    }else{if(audio.src&&Number.isFinite(audio.duration))audio.currentTime=Math.min(audio.duration,audio.currentTime+10);toast('Fast forward ▶▶');emit('forward',{seconds:10})}
+    if(currentSong()?.source){
+      const now=Number(audio.currentTime)||0;
+      const duration=Number(audio.duration);
+      audio.currentTime=Number.isFinite(duration)?Math.min(duration,now+10):now+10;
+      rememberPosition();
+    }
+    toast('Fast forward 10 seconds ▶▶');emit('forward',{seconds:10});
   };
+  // Separate previous/next buttons switch between tracks on a loaded mixtape.
+  $('previousSongButton').onclick=()=>moveSong(-1);
+  $('nextSongButton').onclick=()=>moveSong(1);
   $('ejectButton').onclick=()=>{resetCurrent();activeId=null;audio.removeAttribute('src');audio.load();refreshDeck();toast('Tape ejected');emit('eject',{})};
   const volumeButton=$('volumeBtn');
   function syncVolumeControl(){
