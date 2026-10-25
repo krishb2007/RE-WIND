@@ -248,6 +248,7 @@ button:disabled{cursor:not-allowed;opacity:.35}
     {title:'Vacant Frequencies',artist:'Demo tape',cover:'assets/images/case-08.webp'}
   ].map((item,index) => ({...item,id:'demo-'+index,source:null,demo:true,created:index}));
   let library=[...demo],queue=demo.slice(0,4).map(x=>x.id),activeId='demo-1',windowIndex=1,playing=false,volume=.7,toastTimeout;
+  let pausedAt=0,pausedTrackId=null,playRequest=0;
   const audio=$('audioPlayer');audio.volume=volume;
   function item(id){return library.find(t=>t.id===id)}
   function emit(event,detail={}){document.dispatchEvent(new CustomEvent('rewind:'+event,{detail}))}
@@ -310,15 +311,15 @@ button:disabled{cursor:not-allowed;opacity:.35}
   $('listView').onclick=()=>{$('libraryGrid').classList.add('list-mode');$('listView').classList.add('active');$('gridView').classList.remove('active')};
   function refreshDeck(){const track=item(activeId);$('tapeLabel').textContent=track?track.title:'Mix Tape';$('ejectedVisual').hidden=!!track;$('playerWindow').classList.toggle('is-playing',playing);$('playbackStatus').innerHTML='';const strong=document.createElement('strong');strong.textContent=track?track.title:'Empty deck';$('playbackStatus').append(strong,document.createTextNode(playing?' · playing':' · '+(track?.source?'ready':'visual demo · import an audio file to play')));renderQueue()}
   function loadTrack(id){stop();activeId=id;const track=item(id);if(track?.source){audio.src=track.source;audio.load()}else audio.removeAttribute('src');refreshDeck();emit('load',{track});toast(track?.title+' loaded into player')}
-  async function play(){const track=item(activeId);if(!track){toast('Load a cassette from the queue first');return}if(!track.source){toast('This is demo artwork. Import an audio file to hear playback.');emit('play',{track,hasAudio:false});return}try{await audio.play();playing=true;refreshDeck();emit('play',{track,hasAudio:true})}catch{toast('Could not play this audio file. Try another format.')}}
-  function pause(){audio.pause();playing=false;refreshDeck();emit('pause',{track:item(activeId)})}
-  function stop(){audio.pause();if(Number.isFinite(audio.duration)&&audio.duration>0)audio.currentTime=0;playing=false;refreshDeck();emit('stop',{})}
-  $('playButton').onclick=()=>playing?pause():play();$('stopButton').onclick=()=>{stop();toast('Stopped')};
+  async function play(){const track=item(activeId);if(!track){toast('Load a cassette from the queue first');return}if(!track.source){toast('This is demo artwork. Import an audio file to hear playback.');emit('play',{track,hasAudio:false});return}const request=++playRequest;try{if(pausedTrackId===activeId&&pausedAt>0&&audio.currentTime+0.25<pausedAt)audio.currentTime=pausedAt;await audio.play();if(request!==playRequest||activeId!==track.id){audio.pause();return}playing=true;refreshDeck();emit('play',{track,hasAudio:true})}catch{if(request===playRequest)toast('Could not play this audio file. Try another format.')}}
+  function pause(){playRequest++;pausedAt=Number.isFinite(audio.currentTime)?audio.currentTime:0;pausedTrackId=activeId;audio.pause();playing=false;refreshDeck();emit('pause',{track:item(activeId),currentTime:pausedAt})}
+  function stop(){playRequest++;audio.pause();if(Number.isFinite(audio.duration)&&audio.duration>0)audio.currentTime=0;pausedAt=0;pausedTrackId=null;playing=false;refreshDeck();emit('stop',{})}
+  $('playButton').onclick=()=>audio.paused?play():pause();$('stopButton').onclick=()=>{stop();toast('Stopped')};
   $('rewButton').onclick=()=>{if(audio.src)audio.currentTime=Math.max(0,audio.currentTime-10);toast('Rewind ◀◀');emit('rewind',{seconds:10})};
   $('forwardButton').onclick=()=>{if(audio.src&&Number.isFinite(audio.duration))audio.currentTime=Math.min(audio.duration,audio.currentTime+10);toast('Fast forward ▶▶');emit('forward',{seconds:10})};
   $('ejectButton').onclick=()=>{stop();activeId=null;audio.removeAttribute('src');audio.load();refreshDeck();toast('Tape ejected');emit('eject',{})};
   $('volumeBtn').onclick=()=>{volume=volume>=1?.2:Math.min(1,Math.round((volume+.2)*10)/10);audio.volume=volume;toast('Volume '+Math.round(volume*100)+'%');emit('volume',{value:volume})};
-  audio.onended=()=>{playing=false;const idx=queue.indexOf(activeId);if(idx>=0&&idx+1<queue.length){loadTrack(queue[idx+1]);if(item(activeId)?.source)play()}else refreshDeck()};
+  audio.onended=()=>{playing=false;pausedAt=0;pausedTrackId=null;const idx=queue.indexOf(activeId);if(idx>=0&&idx+1<queue.length){loadTrack(queue[idx+1]);if(item(activeId)?.source)play()}else refreshDeck()};
   // Settings screenshot uses click-target overlays, without re-drawing your approved console.
   const settingsControls=[['Tape warmth',7.8,29,10,24],['Audio warp',42,29,10,24],['Lo-fi / bit depth',75,29,10,24],['Wow',7.8,79,10,22],['Flutter',24,79,10,22],['Tape hiss',42,78,9,18],['Vinyl noise',51,78,9,18],['Hum',60,78,9,18],['Bass',72,78,8,18],['Mid',83,78,8,18],['Treble',93,78,8,18]];
   const values={};settingsControls.forEach(([name,x,y,w,h])=>{const button=document.createElement('button');button.className='settings-hotspot';button.style.left=(x-w/2)+'%';button.style.top=(y-h/2)+'%';button.style.width=w+'%';button.style.height=h+'%';button.title='Adjust '+name;button.setAttribute('aria-label','Adjust '+name);button.onclick=()=>{values[name]=((values[name]||0)+1)%6;$('settingsMessage').textContent=name+': setting '+values[name]+'/5 (visual only)';emit('setting-change',{name,value:values[name]/5})};$('settingsVisual').append(button)});
