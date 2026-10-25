@@ -297,9 +297,32 @@
     {name:'Hum',key:'hum',x:60.77,y:84.4,w:6.5,h:18,initial:0}
   ];
   toggleSettings.forEach(control=>{
-    const slider=document.createElement('input');slider.className='settings-hotspot settings-toggle';configureSettingSlider(slider,control);
-    slider.style.left=(control.x-control.w/2)+'%';slider.style.top=(control.y-control.h/2)+'%';slider.style.width=control.w+'%';slider.style.height=control.h+'%';
-    slider.addEventListener('input',()=>applySetting(control,slider));$('settingsVisual').append(slider);
+    const unit=document.createElement('div');unit.className='noise-unit';
+    unit.style.left=control.x+'%';
+    const led=document.createElement('span');led.className='noise-led';led.setAttribute('aria-hidden','true');
+    const button=document.createElement('button');button.type='button';button.className='noise-switch-button';
+    button.setAttribute('role','switch');button.setAttribute('aria-label',control.name+' on or off');
+    button.setAttribute('aria-checked','false');button.title=control.name+': off';
+    const lever=document.createElement('span');lever.className='noise-lever';lever.setAttribute('aria-hidden','true');
+    button.append(lever);
+    const slider=document.createElement('input');slider.className='noise-level';
+    configureSettingSlider(slider,control);slider.value='.45';
+    slider.setAttribute('aria-label',control.name+' fine tuning');
+    let enabled=false;
+    function update(){
+      unit.classList.toggle('is-on',enabled);
+      button.setAttribute('aria-checked',String(enabled));
+      button.title=control.name+': '+(enabled?'on':'off');
+      const level=Number(slider.value);
+      const value=enabled?level:0;
+      effects.set(control.key,value);
+      slider.setAttribute('aria-valuetext',Math.round(level*100)+' percent');
+      $('settingsMessage').textContent=control.name+': '+(enabled?'ON · '+Math.round(level*100)+'%':'OFF');
+      emit('setting-change',{name:control.name,key:control.key,value});
+    }
+    button.addEventListener('click',()=>{enabled=!enabled;update()});
+    slider.addEventListener('input',update);
+    unit.append(led,button,slider);$('settingsVisual').append(unit);
   });
   // Import dialog: each audio file sits directly beside its own editable song name.
   let coverUrl=null,trackRowId=0,returnFocus=null;
