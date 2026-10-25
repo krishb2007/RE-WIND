@@ -174,12 +174,39 @@
     $('queueCount').textContent=pad(available.length)+' TAPES';
     const stack=$('cassetteStack'),lines=$('queueItems');stack.replaceChildren();lines.replaceChildren();
     if(!available.length){const empty=document.createElement('p');empty.className='queue-empty';empty.textContent='Add songs from your Library';stack.append(empty);return}
+    // Each album gets a stable cassette-shell color, even if the queue changes.
+    const cassetteColors=[
+      ['#f4b5a2','#cf6f6e','#8d3f53'], // coral
+      ['#9bdcd4','#3c9d9a','#1e676f'], // sea glass
+      ['#cbc3f5','#877bc5','#4f4b85'], // lavender
+      ['#f8d990','#dfa94f','#956b36'], // golden amber
+      ['#c5d7a0','#8da46d','#52664b'], // sage
+      ['#a2c9f4','#4e87bd','#335577'], // denim blue
+      ['#f3aac9','#c76293','#7c386a'], // orchid
+      ['#c5c5cf','#858997','#464b5d']  // graphite
+    ];
     available.slice(0,4).forEach(({track})=>{
-      const tape=document.createElement('div');tape.className='cassette-case';tape.title=track.title;
-      const art=document.createElement('div');art.className='spine-image';art.style.backgroundImage=`url(${JSON.stringify(track.cover)})`;
+      const tape=document.createElement('div');
+      tape.className='cassette-case';
+      tape.title=track.title;
+      tape.setAttribute('aria-label','Drag '+track.title+' into the cassette player');
+      const palette=cassetteColors[Math.max(0,library.findIndex(t=>t.id===track.id))%cassetteColors.length];
+      ['--shell-light','--shell-mid','--shell-dark'].forEach((name,i)=>tape.style.setProperty(name,palette[i]));
+      const sticker=document.createElement('div');sticker.className='cassette-sticker';
+      const art=document.createElement('div');art.className='spine-image';
+      art.style.backgroundImage=`url(${JSON.stringify(track.cover)})`;
       const title=document.createElement('strong');title.textContent=track.title;
-      const label=document.createElement('small');label.textContent=songs(track).length>1?songs(track).length+' SONGS':'TAPE';
-      tape.append(art,title,label);attachTapeDrag(tape,track.id);stack.append(tape);
+      const label=document.createElement('small');label.textContent=songs(track).length>1?'SIDE A · '+songs(track).length+' SONGS':'SIDE A';
+      sticker.append(art,title,label);
+      const mechanism=document.createElement('div');mechanism.className='tape-mechanism';
+      const left=document.createElement('span');left.className='tape-reel';
+      const window=document.createElement('span');window.className='tape-window';
+      const right=document.createElement('span');right.className='tape-reel';
+      mechanism.append(left,window,right);
+      const lip=document.createElement('span');lip.className='cassette-lip';lip.setAttribute('aria-hidden','true');
+      tape.append(sticker,mechanism,lip);
+      attachTapeDrag(tape,track.id);
+      stack.append(tape);
     });
     available.forEach(({track,index},i)=>{
       const wrapper=document.createElement('div');wrapper.className='queue-row';
