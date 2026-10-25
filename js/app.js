@@ -25,24 +25,42 @@
   document.querySelectorAll('.navtab').forEach((b,i)=>b.onclick=()=>navigate(i));
   $('gearBtn').onclick=()=>navigate(0);$('aboutBtn').onclick=()=>toast('RE-WIND — Music Lives On · Local cassette player with tape effects');
   document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('modalScrim').hidden)closeModal();hideMenu();return}if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)||!$('modalScrim').hidden)return;if(e.key==='ArrowLeft'){e.preventDefault();navigate(windowIndex-1)}if(e.key==='ArrowRight'){e.preventDefault();navigate(windowIndex+1)}});
+  // Remove exactly one queue occurrence; keep the cassette in the Library.
+  // If it is playing, playback can finish without being interrupted.
+  function removeFromQueue(index){
+    if(index<0||index>=queue.length)return;
+    const removed=item(queue[index]);
+    queue.splice(index,1);
+    renderQueue();
+    emit('queue-change',{ids:[...queue]});
+    toast((removed?.title||'Cassette')+' removed from queue');
+  }
   function renderQueue(){
-    const available=queue.map(id=>item(id)).filter(Boolean);
+    // Preserve original queue indices even when two entries use the same cassette.
+    const available=queue.map((id,index)=>({track:item(id),index})).filter(entry=>!!entry.track);
     $('queueCount').textContent=pad(available.length)+' TAPES';
     const stack=$('cassetteStack'),lines=$('queueItems');stack.replaceChildren();lines.replaceChildren();
     if(!available.length){const empty=document.createElement('p');empty.className='queue-empty';empty.textContent='Add songs from your Library';stack.append(empty);return}
-    available.slice(0,4).forEach(track=>{
+    available.slice(0,4).forEach(({track})=>{
       const tape=document.createElement('div');tape.className='cassette-case';tape.title=track.title;
       const art=document.createElement('div');art.className='spine-image';art.style.backgroundImage=`url(${JSON.stringify(track.cover)})`;
       const title=document.createElement('strong');title.textContent=track.title;
       const label=document.createElement('small');label.textContent=songs(track).length>1?songs(track).length+' SONGS':'TAPE';
       tape.append(art,title,label);stack.append(tape);
     });
-    available.forEach((track,i)=>{
+    available.forEach(({track,index},i)=>{
+      const wrapper=document.createElement('div');wrapper.className='queue-row';
       const row=document.createElement('button');row.type='button';row.className='queue-item'+(track.id===activeId?' active':'');row.title='Load '+track.title;row.setAttribute('aria-current',track.id===activeId?'true':'false');
       const n=document.createElement('span');n.className='number';n.textContent=pad(i+1);
       const t=document.createElement('span');t.className='title';t.textContent=track.title;
       const r=document.createElement('span');r.className='tape-label';r.textContent=songs(track).length>1?songs(track).length+' SONGS':'TAPE';
-      row.append(n,t,r);row.onclick=()=>{if(track.id===activeId){wantsPlayback?pause():play()}else loadTrack(track.id)};lines.append(row);
+      row.append(n,t,r);
+      row.onclick=()=>{if(track.id===activeId){wantsPlayback?pause():play()}else loadTrack(track.id)};
+      const remove=document.createElement('button');remove.type='button';remove.className='queue-remove';remove.textContent='×';
+      remove.title='Remove '+track.title+' from queue';
+      remove.setAttribute('aria-label','Remove '+track.title+' from queue');
+      remove.onclick=()=>removeFromQueue(index);
+      wrapper.append(row,remove);lines.append(wrapper);
     });
   }
   function renderLibrary(){
@@ -79,7 +97,7 @@
     function action(label,run){const b=document.createElement('button');b.textContent=label;b.onclick=()=>{hideMenu();run()};menu.append(b)}
     action('Add to queue',()=>{queue.push(track.id);renderQueue();emit('queue-change',{ids:[...queue]});toast(track.title+' added to queue')});
     action('Load in Player',()=>{if(!queue.includes(track.id)){queue.push(track.id);emit('queue-change',{ids:[...queue]})}loadTrack(track.id);navigate(1)});
-    action('Remove from queue',()=>{const ix=queue.indexOf(track.id);if(ix>=0){queue.splice(ix,1);if(activeId===track.id)stop();renderQueue();emit('queue-change',{ids:[...queue]});toast('Removed from queue')}});
+    action('Remove from queue',()=>removeFromQueue(queue.indexOf(track.id)));
     if(!track.demo)action('Remove imported track',()=>{if(activeId===track.id){resetCurrent();activeId=null;audio.removeAttribute('src');audio.load()}library=library.filter(t=>t.id!==track.id);const oldQueueLength=queue.length;queue=queue.filter(id=>id!==track.id);if(queue.length!==oldQueueLength)emit('queue-change',{ids:[...queue]});releaseTrack(track);renderQueue();renderLibrary();refreshDeck();toast('Track removed')});
     const rect=button.getBoundingClientRect();menu.hidden=false;menu.style.top=Math.min(rect.bottom+7,innerHeight-180)+'px';menu.style.left=Math.max(8,Math.min(rect.left-154,innerWidth-201))+'px';
   }
