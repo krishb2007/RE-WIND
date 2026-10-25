@@ -274,6 +274,21 @@ html[data-theme="dark"] .album-cover-case {
 @media (prefers-reduced-motion: reduce) {
   .album-cover-case { transition: none; }
 }
+
+/* In dark mode, cut away the opaque white studio background baked into
+   cassette-player.webp. The mask matches the existing 1059x616 player silhouette,
+   including the opening under its handle, without moving any clickable controls. */
+html[data-theme="dark"] .device-art{
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%221059%22%20height%3D%22616%22%20viewBox%3D%220%200%201059%20616%22%3E%3Cpath%20fill%3D%22white%22%20fill-rule%3D%22evenodd%22%20d%3D%22M62%2C24L59%2C31L59%2C127L47%2C137L8%2C228L8%2C570L13%2C585L25%2C599L1043%2C599L1058%2C589L1058%2C201L1034%2C139L1023%2C128L1023%2C31L1015%2C18L999%2C16L993%2C12L90%2C12L84%2C16L69%2C17ZM76%2C59L996%2C60L1004%2C57L1006%2C123L999%2C124L996%2C114L988%2C108L96%2C108L87%2C114L83%2C124L77%2C124ZM51%2C596L53%2C605L57%2C611L103%2C611L109%2C601L107%2C596ZM988%2C596L990%2C606L992%2C610L1026%2C610L1031%2C603L1031%2C596Z%22%2F%3E%3C%2Fsvg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%221059%22%20height%3D%22616%22%20viewBox%3D%220%200%201059%20616%22%3E%3Cpath%20fill%3D%22white%22%20fill-rule%3D%22evenodd%22%20d%3D%22M62%2C24L59%2C31L59%2C127L47%2C137L8%2C228L8%2C570L13%2C585L25%2C599L1043%2C599L1058%2C589L1058%2C201L1034%2C139L1023%2C128L1023%2C31L1015%2C18L999%2C16L993%2C12L90%2C12L84%2C16L69%2C17ZM76%2C59L996%2C60L1004%2C57L1006%2C123L999%2C124L996%2C114L988%2C108L96%2C108L87%2C114L83%2C124L77%2C124ZM51%2C596L53%2C605L57%2C611L103%2C611L109%2C601L107%2C596ZM988%2C596L990%2C606L992%2C610L1026%2C610L1031%2C603L1031%2C596Z%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-repeat:no-repeat;
+  mask-repeat:no-repeat;
+  -webkit-mask-size:100% 100%;
+  mask-size:100% 100%;
+  -webkit-mask-position:center;
+  mask-position:center;
+}
+
 </style>
 </head>
 <body>
