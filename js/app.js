@@ -466,7 +466,7 @@
     effects.set(control.key,value);
     slider.setAttribute('aria-valuetext',percent+' percent');
     if(wrapper)wrapper.style.setProperty('--knob-angle',(-135+value*270)+'deg');
-    $('settingsMessage').textContent=control.name+': '+percent+'%';if(control.key==='lofi'){const readout=$('rwBitDepth');if(readout)readout.textContent=String(Math.round(16-value*12))}
+    $('settingsMessage').textContent=control.name+': '+percent+'%';if(control.key==='lofi'){const readout=$('rwBitDepth');if(readout)readout.textContent=String(Math.max(2, Math.round(16 - 14 * Math.pow(value, 0.65))))}
     emit('setting-change',{name:control.name,key:control.key,value});
   }
   rotarySettings.forEach(control=>{
