@@ -66,18 +66,18 @@ button:disabled{cursor:not-allowed;opacity:.35}
 .queue-heading strong{font-size:clamp(16px,1.25vw,22px);letter-spacing:.17em}
 .queue-heading span{font-size:12px;color:#adb0b7;letter-spacing:.09em}
 .cassette-stack{display:flex;flex-direction:column;gap:2px;padding:24px 7px 21px;min-height:229px;max-height:390px;overflow-y:auto;justify-content:flex-start;align-items:center;scrollbar-color:#b7b9bd transparent;scrollbar-width:thin}
-.cassette-case{appearance:none;flex:0 0 auto;width:min(100%,370px);height:clamp(76px,6vw,92px);position:relative;display:flex;align-items:flex-start;padding:0;text-align:left;font:inherit;color:inherit;cursor:grab;background:radial-gradient(circle at 4.5% 14%,#202225 0 2px,#b8bdc0 2.5px 4px,transparent 4.5px),radial-gradient(circle at 95.5% 14%,#202225 0 2px,#b8bdc0 2.5px 4px,transparent 4.5px),radial-gradient(circle at 4.5% 86%,#202225 0 2px,#b8bdc0 2.5px 4px,transparent 4.5px),radial-gradient(circle at 95.5% 86%,#202225 0 2px,#b8bdc0 2.5px 4px,transparent 4.5px),linear-gradient(145deg,#d7dadd 0%,#aeb4b9 45%,#858b91 100%);border:2px solid #777d82;border-radius:8px;clip-path:polygon(2.5% 0,97.5% 0,100% 11%,100% 89%,97.5% 100%,2.5% 100%,0 89%,0 11%);box-shadow:0 4px 0 #6d7276,0 9px 15px #10121426,inset 0 0 0 2px #f4f5f566;overflow:hidden;transform:translateY(0);transition:transform .18s,box-shadow .18s,opacity .18s}
-.cassette-case:hover{transform:translateY(-5px) rotate(-.35deg);z-index:4;box-shadow:0 8px 0 #6d7276,0 16px 20px #10121438,inset 0 0 0 2px #fff8}
+.cassette-case{--shell-light:#f2c7b6;--shell-mid:#d8796b;--shell-dark:#8f4549;appearance:none;flex:0 0 auto;width:min(100%,370px);height:clamp(76px,6vw,92px);position:relative;display:flex;align-items:flex-start;padding:0;text-align:left;font:inherit;color:inherit;cursor:grab;background:radial-gradient(circle at 4.5% 14%,#3b3030 0 2px,#f3e9d9 2.5px 4px,transparent 4.5px),radial-gradient(circle at 95.5% 14%,#3b3030 0 2px,#f3e9d9 2.5px 4px,transparent 4.5px),radial-gradient(circle at 4.5% 86%,#3b3030 0 2px,#f3e9d9 2.5px 4px,transparent 4.5px),radial-gradient(circle at 95.5% 86%,#3b3030 0 2px,#f3e9d9 2.5px 4px,transparent 4.5px),linear-gradient(145deg,var(--shell-light) 0%,var(--shell-mid) 52%,var(--shell-dark) 100%);border:2px solid var(--shell-dark);border-radius:8px;clip-path:polygon(2.5% 0,97.5% 0,100% 11%,100% 89%,97.5% 100%,2.5% 100%,0 89%,0 11%);box-shadow:0 4px 0 var(--shell-dark),0 9px 15px #3f252326,inset 0 0 0 2px #fff6;overflow:hidden;transform:translateY(0);transition:transform .18s,box-shadow .18s,opacity .18s}
+.cassette-case:hover{transform:translateY(-5px) rotate(-.35deg);z-index:4;box-shadow:0 8px 0 var(--shell-dark),0 16px 20px #3f252338,inset 0 0 0 2px #fff9}
 .cassette-case:active,.queue-item[draggable=true]:active{cursor:grabbing}.cassette-case.dragging,.queue-item.dragging{opacity:.42}
 .cassette-case .spine-image{position:absolute;left:10%;right:10%;top:9px;height:42%;border:1px solid #ffffff9c;border-radius:3px;background-size:cover;background-position:center;filter:brightness(.7) saturate(.78);box-shadow:inset 0 0 14px #0005;opacity:.92}
 .cassette-case:nth-child(2n) .spine-image{filter:brightness(.73) saturate(.62)}
 .cassette-case strong,.cassette-case small{z-index:3;position:relative;color:#fff;text-shadow:0 1px 4px #000d;pointer-events:none}
 .cassette-case strong{margin:11px 0 0 13%;font-size:clamp(10px,.96vw,14px);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:66%;letter-spacing:.02em}
 .cassette-case small{margin:12px 13% 0 auto;font-size:9px;letter-spacing:.14em}
-.tape-mechanism{position:absolute;z-index:2;left:16%;right:16%;bottom:7px;height:38%;min-height:28px;display:flex;align-items:center;justify-content:space-between;padding:2px 8px;border:2px solid #6e7377;border-radius:4px 4px 9px 9px;background:linear-gradient(165deg,#e4e6e7,#b8bdc0 52%,#8f9599);box-shadow:inset 0 2px 4px #fff8,inset 0 -3px 5px #4e535766;pointer-events:none}
-.tape-mechanism:before{content:'';position:absolute;left:50%;bottom:-4px;width:42%;height:9px;transform:translateX(-50%);background:#747a7e;clip-path:polygon(12% 0,88% 0,100% 100%,0 100%);border-radius:0 0 3px 3px}
-.tape-reel{position:relative;z-index:2;width:clamp(22px,2.25vw,31px);height:clamp(22px,2.25vw,31px);border:4px solid #f1f1ed;border-radius:50%;background:repeating-conic-gradient(#35383b 0 14deg,#b8bdc0 15deg 29deg);box-shadow:0 0 0 2px #53585c,inset 0 0 0 4px #292c2e;transition:transform .24s ease}
-.tape-window{position:absolute;left:50%;top:50%;width:42%;height:54%;transform:translate(-50%,-50%);border:2px solid #686d71;border-radius:12px;background:linear-gradient(90deg,#24272a,#555b5f 45%,#202326);box-shadow:inset 0 2px 5px #000b,0 1px #fff8}
+.tape-mechanism{position:absolute;z-index:2;left:16%;right:16%;bottom:7px;height:38%;min-height:28px;display:flex;align-items:center;justify-content:space-between;padding:2px 8px;border:2px solid #6f6557;border-radius:4px 4px 9px 9px;background:linear-gradient(165deg,#fff9e8,#e8dcc1 58%,#cbbb98);box-shadow:inset 0 2px 4px #fff9,inset 0 -3px 5px #75674d42;pointer-events:none}
+.tape-mechanism:before{content:'';position:absolute;left:50%;bottom:-4px;width:42%;height:9px;transform:translateX(-50%);background:var(--shell-dark);clip-path:polygon(12% 0,88% 0,100% 100%,0 100%);border-radius:0 0 3px 3px}
+.tape-reel{position:relative;z-index:2;width:clamp(22px,2.25vw,31px);height:clamp(22px,2.25vw,31px);border:4px solid #fff7dd;border-radius:50%;background:repeating-conic-gradient(#413a35 0 14deg,#d1b986 15deg 29deg);box-shadow:0 0 0 2px #665c4f,inset 0 0 0 4px #2d2926;transition:transform .24s ease}
+.tape-window{position:absolute;left:50%;top:50%;width:42%;height:54%;transform:translate(-50%,-50%);border:2px solid #6d6254;border-radius:12px;background:linear-gradient(90deg,#292521,#584c42 45%,#25211e);box-shadow:inset 0 2px 5px #000b,0 1px #fff9}
 .tape-window:after{content:'';position:absolute;inset:34% 8%;border-radius:5px;background:#b67a46;box-shadow:0 0 5px #7c4c27}
 .cassette-case:hover .tape-reel:first-child{transform:rotate(-18deg)}.cassette-case:hover .tape-reel:last-child{transform:rotate(18deg)}
 .queue-items{display:flex;flex-direction:column;gap:3px}
@@ -261,6 +261,7 @@ button:disabled{cursor:not-allowed;opacity:.35}
   let library=[...demo],queue=demo.slice(0,4).map(x=>x.id),activeId='demo-1',windowIndex=1,playing=false,volume=.7,toastTimeout;
   let playRequest=0,wantsPlayback=false;
   const resumePositions=new Map();
+  const tapePalettes=[['#e7a58f','#c66f65','#8c4545'],['#a9cbc4','#61948e','#365f5d'],['#e3c16f','#b98a3f','#73542f'],['#c1a8c8','#866b91','#51425f'],['#bdcbae','#7f9b77','#4b654d'],['#e2b1bf','#bc7188','#78455e'],['#b5c8df','#718eae','#425b7c'],['#e3a46f','#bd6947','#753d35']];
   const audio=$('audioPlayer');audio.volume=volume;
   function item(id){return library.find(t=>t.id===id)}
   function emit(event,detail={}){document.dispatchEvent(new CustomEvent('rewind:'+event,{detail}))}
@@ -283,8 +284,9 @@ button:disabled{cursor:not-allowed;opacity:.35}
     $('queueCount').textContent=pad(available.length)+' TRACKS';
     const stack=$('cassetteStack'),lines=$('queueItems');stack.replaceChildren();lines.replaceChildren();
     if(!available.length){const empty=document.createElement('p');empty.className='queue-empty';empty.textContent='Add songs from your Library';stack.append(empty);return}
-    available.forEach(track=>{
+    available.forEach((track,tapeIndex)=>{
       const tape=document.createElement('button');tape.type='button';tape.className='cassette-case';tape.title='Drag '+track.title+' into the deck or click to insert';tape.setAttribute('aria-label','Insert '+track.title+' cassette');
+      const palette=tapePalettes[(Number.isFinite(track.created)?Math.abs(track.created):tapeIndex)%tapePalettes.length];tape.style.setProperty('--shell-light',palette[0]);tape.style.setProperty('--shell-mid',palette[1]);tape.style.setProperty('--shell-dark',palette[2]);
       const art=document.createElement('div');art.className='spine-image';art.style.backgroundImage=`url(${JSON.stringify(track.cover)})`;
       const title=document.createElement('strong');title.textContent=track.title;
       const label=document.createElement('small');label.textContent='TAPE';
