@@ -784,11 +784,11 @@ html[data-theme="dark"] .sfx-toggle[aria-pressed="false"]{
 .deck-song-button:not(:disabled):active{filter:brightness(.83);transform:translateY(2px)}
 .deck-song-button:focus-visible{outline:2px solid #fff;outline-offset:4px}
 @media(prefers-reduced-motion:reduce){.deck-song-button{transition:none}}
-/* Real handwritten mixtape label: covers the printed image title and
-   updates to the currently loaded song without changing the player artwork. */
+/* Handwritten mixtape label, with a continuous right-to-left marquee. */
 #cassetteDevice .tape-title{
-  display:block;
-  align-content:center;
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
   z-index:3;
   padding:0 4px;
   background:linear-gradient(180deg,#f8f2e9,#ede3d6);
@@ -802,11 +802,35 @@ html[data-theme="dark"] .sfx-toggle[aria-pressed="false"]{
   text-shadow:0 .4px 0 #ffffff70;
   white-space:nowrap;
   overflow:hidden;
-  text-overflow:ellipsis;
   box-shadow:inset 0 1px #ffffff9c;
+}
+#cassetteDevice .tape-title-scroll{
+  display:inline-block;
+  width:max-content;
+  flex:none;
+  padding-left:100%; /* text enters from the right even for short titles */
+  white-space:nowrap;
+  will-change:transform;
+  animation:rwCassetteTitleScroll 12s linear infinite;
+}
+@keyframes rwCassetteTitleScroll{
+  from{transform:translateX(0)}
+  to{transform:translateX(-100%)}
 }
 @media(max-width:480px){
   #cassetteDevice .tape-title{font-size:clamp(9px,2.8vw,15px);padding:0 2px}
+}
+@media(prefers-reduced-motion:reduce){
+  #cassetteDevice .tape-title-scroll{
+    animation:none;
+    transform:none;
+    padding-left:0;
+    max-width:100%;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    margin-inline:auto;
+    will-change:auto;
+  }
 }
 
 </style>
