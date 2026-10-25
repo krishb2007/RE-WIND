@@ -33,6 +33,7 @@
     queue.splice(index,1);
     renderQueue();
     emit('queue-change',{ids:[...queue]});
+    emit('tape-remove',{tape:removed});
     toast((removed?.title||'Cassette')+' removed from queue');
   }
 
@@ -75,6 +76,7 @@
     element.addEventListener('dragstart',event=>{
       if(!item(id)){event.preventDefault();return}
       draggedTapeId=id;
+      emit('tape-pickup',{id,tape:item(id)});
       dragOrigin=windowIndex;
       dragDropped=false;
       if(event.dataTransfer){
@@ -107,6 +109,7 @@
       if(!drag.started&&Math.hypot(event.clientX-drag.x,event.clientY-drag.y)>14){
         drag.started=true;
         const tape=item(drag.id);
+        emit('tape-pickup',{id:drag.id,tape});
         const ghost=document.createElement('div');
         ghost.className='tape-drag-ghost';
         const image=document.createElement('img');
@@ -248,7 +251,7 @@
       }else{select.append(cover)}
       cover.draggable=false;
       attachTapeDrag(select,track.id);
-      select.onclick=()=>{if(Date.now()-lastTouchDragAt<500)return;queue.push(track.id);renderQueue();toast(track.title+' added to queue');emit('queue-change',{ids:[...queue]})};
+      select.onclick=()=>{if(Date.now()-lastTouchDragAt<500)return;queue.push(track.id);renderQueue();toast(track.title+' added to queue');emit('queue-change',{ids:[...queue]});emit('tape-queue-add',{tape:track})};
       const info=document.createElement('div');info.className='album-meta';
       const texts=document.createElement('div');texts.className='album-text';const title=document.createElement('strong');title.textContent=track.title;const caption=document.createElement('small');caption.textContent=songs(track).length>1?songs(track).length+' TRACKS':'TAPE';texts.append(title,caption);
       const more=document.createElement('button');more.className='album-more';more.textContent='⋮';more.setAttribute('aria-label','More actions for '+track.title);more.onclick=e=>{e.stopPropagation();showMenu(e.currentTarget,track)};
@@ -258,7 +261,7 @@
   }
   function showMenu(button,track){const menu=$('contextMenu');menu.replaceChildren();
     function action(label,run){const b=document.createElement('button');b.textContent=label;b.onclick=()=>{hideMenu();run()};menu.append(b)}
-    action('Add to queue',()=>{queue.push(track.id);renderQueue();emit('queue-change',{ids:[...queue]});toast(track.title+' added to queue')});
+    action('Add to queue',()=>{queue.push(track.id);renderQueue();emit('queue-change',{ids:[...queue]});emit('tape-queue-add',{tape:track});toast(track.title+' added to queue')});
     action('Load in Player',()=>{if(!queue.includes(track.id)){queue.push(track.id);emit('queue-change',{ids:[...queue]})}loadTrack(track.id);navigate(1)});
     action('Remove from queue',()=>removeFromQueue(queue.indexOf(track.id)));
     if(!track.demo)action('Remove imported track',()=>{if(activeId===track.id){resetCurrent();activeId=null;audio.removeAttribute('src');audio.load()}library=library.filter(t=>t.id!==track.id);const oldQueueLength=queue.length;queue=queue.filter(id=>id!==track.id);if(queue.length!==oldQueueLength)emit('queue-change',{ids:[...queue]});releaseTrack(track);renderQueue();renderLibrary();refreshDeck();toast('Track removed')});
