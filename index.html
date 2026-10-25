@@ -7,7 +7,7 @@
 <title>RE-WIND | Music Lives On</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Caveat:wght@600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{--ink:#18191b;--ink2:#26272a;--red:#e32740;--rose:#fde9ec;--paper:#fff;--gray:#777b83;--line:#e7e8e9;--soft:#f6f6f6;--muted:#9ca0a5;--radius:14px;--shadow:0 10px 28px rgba(15,16,18,.045)}
 *{box-sizing:border-box}
@@ -784,13 +784,29 @@ html[data-theme="dark"] .sfx-toggle[aria-pressed="false"]{
 .deck-song-button:not(:disabled):active{filter:brightness(.83);transform:translateY(2px)}
 .deck-song-button:focus-visible{outline:2px solid #fff;outline-offset:4px}
 @media(prefers-reduced-motion:reduce){.deck-song-button{transition:none}}
-/* The original cassette photo has a printed name. This blank label
-   hides it even when inserted tape names are very long. */
+/* Real handwritten mixtape label: covers the printed image title and
+   updates to the currently loaded song without changing the player artwork. */
 #cassetteDevice .tape-title{
-  background:linear-gradient(#f7f1e8,#eee6d9);
-  color:transparent;
-  font-size:0;
-  text-shadow:none;
+  display:block;
+  align-content:center;
+  z-index:3;
+  padding:0 4px;
+  background:linear-gradient(180deg,#f8f2e9,#ede3d6);
+  color:#31282b;
+  font-family:"Caveat","Segoe Print","Comic Sans MS",cursive;
+  font-size:clamp(11px,1.75vw,24px);
+  font-style:normal;
+  font-weight:700;
+  line-height:1;
+  letter-spacing:.01em;
+  text-shadow:0 .4px 0 #ffffff70;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  box-shadow:inset 0 1px #ffffff9c;
+}
+@media(max-width:480px){
+  #cassetteDevice .tape-title{font-size:clamp(9px,2.8vw,15px);padding:0 2px}
 }
 
 </style>
