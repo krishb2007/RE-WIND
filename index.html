@@ -644,6 +644,75 @@ html[data-theme="dark"] .drag-tip{color:#bab4bc}
   .cassette-case{height:90px}
   .cassette-case .tape-reel{width:28px;height:28px}
 }
+
+/* Player hardware polish: keep the photo's true metal volume dial.
+   Only its small position dot rotates; the original drum is no longer obscured
+   by a second faux-3D knob. Existing js/app.js volume handlers stay intact. */
+#volumeBtn.volume-control{
+  left:11.28%;
+  top:17.9%;
+  width:6.7%;
+  height:11.7%;
+  aspect-ratio:auto;
+  border:0;
+  border-radius:50% 50% 30% 30%;
+  padding:0;
+  background:transparent;
+  box-shadow:none;
+  z-index:4;
+  cursor:grab;
+}
+#volumeBtn.volume-control::before{content:none}
+#volumeBtn .volume-knob-face{display:none}
+#volumeBtn.volume-control::after{
+  content:"";
+  position:absolute;
+  inset:auto;
+  top:25%;
+  left:50%;
+  width:11%;
+  height:auto;
+  aspect-ratio:1;
+  border-radius:50%;
+  border:1px solid #c1c3c5;
+  background:radial-gradient(circle at 35% 35%,#53565a 0%,#10151c 55%,#03070b 100%);
+  box-shadow:inset 0 1px 2px #0009,0 1px 1px #fff9;
+  transform:translate(-50%,-50%) rotate(var(--knob-angle)) translateY(-9px);
+  transition:transform .12s ease;
+  pointer-events:none;
+}
+#volumeBtn.volume-control:focus-visible{
+  outline:2px solid var(--red);
+  outline-offset:4px;
+}
+#volumeBtn.volume-control:hover{box-shadow:0 0 0 1px #ffffff6b}
+#volumeBtn.volume-control.is-dragging{cursor:grabbing}
+/* The unused FM / AM / TAPE switch is painted into the player photograph.
+   Blend it away using the same red enamel as the surrounding top panel.
+   This overlay is decorative only; no buttons or sound logic are introduced. */
+#cassetteDevice.device::after{
+  content:"";
+  position:absolute;
+  left:82.3%;
+  top:17.5%;
+  width:10.6%;
+  height:13.5%;
+  z-index:2;
+  pointer-events:none;
+  background:linear-gradient(180deg,#b83b3e 0%,#bd383c 55%,#c3383c 100%);
+  -webkit-mask-image:
+    linear-gradient(to right,transparent 0%,#000 7%,#000 93%,transparent 100%),
+    linear-gradient(to bottom,transparent 0%,#000 8%,#000 92%,transparent 100%);
+  -webkit-mask-composite:source-in;
+  mask-image:
+    linear-gradient(to right,transparent 0%,#000 7%,#000 93%,transparent 100%),
+    linear-gradient(to bottom,transparent 0%,#000 8%,#000 92%,transparent 100%);
+  mask-composite:intersect;
+}
+@media(prefers-reduced-motion:reduce){
+  #volumeBtn.volume-control::after{transition:none}
+}
+
 </style>
 </head>
 <body>
