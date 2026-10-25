@@ -35,6 +35,139 @@
     emit('queue-change',{ids:[...queue]});
     toast((removed?.title||'Cassette')+' removed from queue');
   }
+
+  // Drag cassette covers or queued tapes into the stereo. The source remains
+  // available in the Library, while the inserted cassette is loaded in the deck.
+  let draggedTapeId=null,dragOrigin=1,dragDropped=false,dragNavigateTimer=null;
+  let touchTapeDrag=null,lastTouchDragAt=0;
+  const cassetteDevice=$('cassetteDevice');
+  function dropVisual(ready,over=false){
+    cassetteDevice.classList.toggle('drop-ready',ready);
+    cassetteDevice.classList.toggle('drag-over',ready&&over);
+  }
+  function insertIntoDeck(id){
+    const tape=item(id);
+    if(!tape)return;
+    if(!queue.includes(id)){
+      queue.push(id);
+      emit('queue-change',{ids:[...queue]});
+    }
+    loadTrack(id);
+    navigate(1);
+    toast(tape.title+' inserted — press PLAY to listen');
+    emit('tape-insert',{id,tape});
+  }
+  function clearDesktopDrag(restoreView=false){
+    clearTimeout(dragNavigateTimer);
+    dragNavigateTimer=null;
+    const previous=dragOrigin;
+    draggedTapeId=null;
+    dropVisual(false);
+    if(restoreView&&previous===2)navigate(2);
+  }
+  function pointOverDeck(x,y){
+    const box=cassetteDevice.getBoundingClientRect();
+    return x>=box.left&&x<=box.right&&y>=box.top&&y<=box.bottom;
+  }
+  function attachTapeDrag(element,id){
+    element.draggable=true;
+    element.title=(element.title?element.title+' · ':'')+'Drag into the boombox to insert';
+    element.addEventListener('dragstart',event=>{
+      if(!item(id)){event.preventDefault();return}
+      draggedTapeId=id;
+      dragOrigin=windowIndex;
+      dragDropped=false;
+      if(event.dataTransfer){
+        event.dataTransfer.effectAllowed='copy';
+        event.dataTransfer.setData('text/plain',id);
+        event.dataTransfer.setData('application/x-rewind-cassette',id);
+      }
+      hideMenu();
+      dropVisual(true);
+      clearTimeout(dragNavigateTimer);
+      if(windowIndex!==1){
+        // The Library is a separate slide: reveal the stereo during dragging.
+        dragNavigateTimer=setTimeout(()=>{if(draggedTapeId===id)navigate(1)},190);
+      }
+    });
+    element.addEventListener('dragend',()=>{
+      if(draggedTapeId!==null)clearDesktopDrag(!dragDropped);
+    });
+    // Native browser drag-and-drop doesn't work reliably on touchscreens.
+    // A small sideways drag instead switches to the player with a floating tape.
+    element.addEventListener('pointerdown',event=>{
+      if(event.pointerType==='mouse'||event.button!==0||touchTapeDrag)return;
+      touchTapeDrag={id,pointerId:event.pointerId,x:event.clientX,y:event.clientY,
+        origin:windowIndex,started:false,ghost:null};
+      try{element.setPointerCapture(event.pointerId)}catch{}
+    });
+    element.addEventListener('pointermove',event=>{
+      const drag=touchTapeDrag;
+      if(!drag||drag.pointerId!==event.pointerId)return;
+      if(!drag.started&&Math.hypot(event.clientX-drag.x,event.clientY-drag.y)>14){
+        drag.started=true;
+        const tape=item(drag.id);
+        const ghost=document.createElement('div');
+        ghost.className='tape-drag-ghost';
+        const image=document.createElement('img');
+        image.src=tape.cover;image.alt='';
+        const name=document.createElement('span');
+        name.textContent=tape.title;
+        ghost.append(image,name);
+        document.body.append(ghost);
+        drag.ghost=ghost;
+        hideMenu();
+        dropVisual(true);
+        navigate(1);
+      }
+      if(!drag.started)return;
+      event.preventDefault();
+      drag.ghost.style.left=event.clientX+'px';
+      drag.ghost.style.top=event.clientY+'px';
+      dropVisual(true,pointOverDeck(event.clientX,event.clientY));
+    });
+    function endTouchDrag(event,cancelled){
+      const drag=touchTapeDrag;
+      if(!drag||drag.pointerId!==event.pointerId)return;
+      touchTapeDrag=null;
+      if(!drag.started)return;
+      lastTouchDragAt=Date.now();
+      event.preventDefault();
+      drag.ghost?.remove();
+      const valid=!cancelled&&pointOverDeck(event.clientX,event.clientY);
+      dropVisual(false);
+      if(valid)insertIntoDeck(drag.id);
+      else{
+        if(drag.origin===2)navigate(2);
+        if(!cancelled)toast('Drop the cassette onto the boombox to insert');
+      }
+    }
+    element.addEventListener('pointerup',event=>endTouchDrag(event,false));
+    element.addEventListener('pointercancel',event=>endTouchDrag(event,true));
+  }
+  cassetteDevice.addEventListener('dragenter',event=>{
+    if(draggedTapeId){event.preventDefault();dropVisual(true,true)}
+  });
+  cassetteDevice.addEventListener('dragover',event=>{
+    if(!draggedTapeId)return;
+    event.preventDefault();
+    if(event.dataTransfer)event.dataTransfer.dropEffect='copy';
+    dropVisual(true,true);
+  });
+  cassetteDevice.addEventListener('dragleave',event=>{
+    if(draggedTapeId&&!cassetteDevice.contains(event.relatedTarget))dropVisual(true,false);
+  });
+  cassetteDevice.addEventListener('drop',event=>{
+    if(!draggedTapeId)return;
+    event.preventDefault();
+    const id=draggedTapeId;
+    dragDropped=true;
+    clearDesktopDrag(false);
+    insertIntoDeck(id);
+  });
+  document.addEventListener('dragover',event=>{
+    if(draggedTapeId&&event.target.closest?.('#playerWindow'))event.preventDefault();
+  });
   function renderQueue(){
     // Preserve original queue indices even when two entries use the same cassette.
     const available=queue.map((id,index)=>({track:item(id),index})).filter(entry=>!!entry.track);
@@ -46,7 +179,7 @@
       const art=document.createElement('div');art.className='spine-image';art.style.backgroundImage=`url(${JSON.stringify(track.cover)})`;
       const title=document.createElement('strong');title.textContent=track.title;
       const label=document.createElement('small');label.textContent=songs(track).length>1?songs(track).length+' SONGS':'TAPE';
-      tape.append(art,title,label);stack.append(tape);
+      tape.append(art,title,label);attachTapeDrag(tape,track.id);stack.append(tape);
     });
     available.forEach(({track,index},i)=>{
       const wrapper=document.createElement('div');wrapper.className='queue-row';
@@ -55,7 +188,8 @@
       const t=document.createElement('span');t.className='title';t.textContent=track.title;
       const r=document.createElement('span');r.className='tape-label';r.textContent=songs(track).length>1?songs(track).length+' SONGS':'TAPE';
       row.append(n,t,r);
-      row.onclick=()=>{if(track.id===activeId){wantsPlayback?pause():play()}else loadTrack(track.id)};
+      attachTapeDrag(row,track.id);
+      row.onclick=()=>{if(Date.now()-lastTouchDragAt<500)return;if(track.id===activeId){wantsPlayback?pause():play()}else loadTrack(track.id)};
       const remove=document.createElement('button');remove.type='button';remove.className='queue-remove';remove.textContent='×';
       remove.title='Remove '+track.title+' from queue';
       remove.setAttribute('aria-label','Remove '+track.title+' from queue');
@@ -85,7 +219,9 @@
         const frame=document.createElement('span');frame.className='album-cover-case';
         frame.append(cover);select.append(frame);
       }else{select.append(cover)}
-      select.onclick=()=>{queue.push(track.id);renderQueue();toast(track.title+' added to queue');emit('queue-change',{ids:[...queue]})};
+      cover.draggable=false;
+      attachTapeDrag(select,track.id);
+      select.onclick=()=>{if(Date.now()-lastTouchDragAt<500)return;queue.push(track.id);renderQueue();toast(track.title+' added to queue');emit('queue-change',{ids:[...queue]})};
       const info=document.createElement('div');info.className='album-meta';
       const texts=document.createElement('div');texts.className='album-text';const title=document.createElement('strong');title.textContent=track.title;const caption=document.createElement('small');caption.textContent=songs(track).length>1?songs(track).length+' TRACKS':'TAPE';texts.append(title,caption);
       const more=document.createElement('button');more.className='album-more';more.textContent='⋮';more.setAttribute('aria-label','More actions for '+track.title);more.onclick=e=>{e.stopPropagation();showMenu(e.currentTarget,track)};
