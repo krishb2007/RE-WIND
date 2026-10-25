@@ -277,6 +277,16 @@
   $('searchInput').addEventListener('input',renderLibrary);$('sortSelect').addEventListener('change',renderLibrary);
   $('gridView').onclick=()=>{$('libraryGrid').classList.remove('list-mode');$('gridView').classList.add('active');$('listView').classList.remove('active')};
   $('listView').onclick=()=>{$('libraryGrid').classList.add('list-mode');$('listView').classList.add('active');$('gridView').classList.remove('active')};
+  // Travel completely across the paper label at a consistent reading speed.
+  // The CSS includes a full label-width lead-in, so even short titles scroll.
+  function adjustTapeTitleScroll(){
+    const runner=$('tapeLabel').querySelector('.tape-title-scroll');
+    if(!runner)return;
+    const distance=runner.scrollWidth;
+    runner.style.animationDuration=(Math.max(7,distance/27)).toFixed(2)+'s';
+  }
+  window.addEventListener('resize',adjustTapeTitleScroll);
+  if(document.fonts?.ready)document.fonts.ready.then(adjustTapeTitleScroll).catch(()=>{});
   function refreshDeck(){
     const tape=item(activeId),song=currentSong(),count=songs(tape).length;
     // Keep track controls visible but disabled for single-song tapes.
@@ -285,11 +295,22 @@
     next.disabled=count<=1||activeSongIndex>=count-1;
     previous.title=count<=1?'Only available for multi-song tapes':previous.disabled?'First song on this tape':'Previous song';
     next.title=count<=1?'Only available for multi-song tapes':next.disabled?'Last song on this tape':'Next song';
-    // Write the current song's title onto the cassette's paper label.
-    // A single-song tape also shows its title; ejected decks remain blank.
+    // Keep the title marquee running continuously, even through play/pause
+    // and other refreshes. Only rebuild it when the song actually changes.
     const printedTitle=tape?(song?.name||tape.title):'';
-    $('tapeLabel').textContent=printedTitle;
-    $('tapeLabel').title=printedTitle;
+    const tapeLabel=$('tapeLabel');
+    if(tapeLabel.dataset.currentTitle!==printedTitle){
+      tapeLabel.dataset.currentTitle=printedTitle;
+      tapeLabel.replaceChildren();
+      if(printedTitle){
+        const scrollingText=document.createElement('span');
+        scrollingText.className='tape-title-scroll';
+        scrollingText.textContent=printedTitle;
+        tapeLabel.append(scrollingText);
+        requestAnimationFrame(adjustTapeTitleScroll);
+      }
+    }
+    tapeLabel.title=printedTitle;
     $('ejectedVisual').hidden=!!tape;
     $('playerWindow').classList.toggle('is-playing',playing);
     $('playbackStatus').replaceChildren();
