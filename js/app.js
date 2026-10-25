@@ -285,8 +285,11 @@
     next.disabled=count<=1||activeSongIndex>=count-1;
     previous.title=count<=1?'Only available for multi-song tapes':previous.disabled?'First song on this tape':'Previous song';
     next.title=count<=1?'Only available for multi-song tapes':next.disabled?'Last song on this tape':'Next song';
-    // The printed cassette label remains blank; full names are shown below the player.
-    $('tapeLabel').textContent='';
+    // Write the current song's title onto the cassette's paper label.
+    // A single-song tape also shows its title; ejected decks remain blank.
+    const printedTitle=tape?(song?.name||tape.title):'';
+    $('tapeLabel').textContent=printedTitle;
+    $('tapeLabel').title=printedTitle;
     $('ejectedVisual').hidden=!!tape;
     $('playerWindow').classList.toggle('is-playing',playing);
     $('playbackStatus').replaceChildren();
