@@ -303,5 +303,369 @@ html[data-theme="dark"] .album-cover-case{border-color:#777981;border-left-color
 </script>
 <script src="js/effect.js"></script>
 <script src="js/app.js"></script>
+  
+<!-- RE-WIND: INTERACTIVE 3D KNOBS -->
+<style>
+/* Metallic knob body */
+.rw-3d-setting,
+#volumeBtn.rw-3d-volume {
+  --rw-angle: 0deg;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: ns-resize;
+}
+
+.rw-3d-setting {
+  position: absolute;
+  aspect-ratio: 1;
+  height: auto;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  z-index: 6;
+}
+
+#volumeBtn.rw-3d-volume {
+  z-index: 8;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  overflow: visible;
+}
+
+.rw-3d-setting::before,
+#volumeBtn.rw-3d-volume::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 2px solid #9da1a6;
+  background: conic-gradient(
+    #35383c 0deg,
+    #e9edf0 45deg,
+    #858a91 100deg,
+    #e4e6e9 160deg,
+    #383b40 235deg,
+    #a9adb2 300deg,
+    #35383c 360deg
+  );
+  box-shadow:
+    0 7px 10px rgba(0,0,0,.48),
+    0 2px 3px rgba(0,0,0,.3),
+    inset 0 2px 3px rgba(255,255,255,.8),
+    inset 0 -4px 6px rgba(0,0,0,.48);
+}
+
+.rw-knob-face {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 78%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 1px solid #747980;
+  background:
+    radial-gradient(circle at 35% 26%, #91969d, #41454c 55%, #21242a);
+  transform:
+    translate(-50%, -50%)
+    rotate(var(--rw-angle));
+  transition: transform .11s ease-out;
+  box-shadow:
+    inset 0 2px 5px rgba(255,255,255,.3),
+    inset 0 -4px 7px rgba(0,0,0,.5),
+    0 1px 3px #111a;
+}
+
+/* Red position indicator rotates with the knob */
+.rw-knob-face::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 9%;
+  width: 8%;
+  height: 19%;
+  transform: translateX(-50%);
+  border-radius: 4px;
+  background: #ed4056;
+  box-shadow: 0 0 5px #ed405677;
+}
+
+/* Physical interaction feedback */
+.rw-3d-setting:hover,
+#volumeBtn.rw-3d-volume:hover {
+  filter: brightness(1.16);
+}
+
+.rw-3d-setting.rw-dragging,
+#volumeBtn.rw-3d-volume.rw-dragging {
+  cursor: grabbing;
+  filter: brightness(1.23);
+}
+
+.rw-3d-setting.rw-focused {
+  outline: 2px solid #e32740;
+  outline-offset: 5px;
+}
+
+.deck-hit {
+  transition:
+    transform .12s ease,
+    background .12s ease,
+    box-shadow .12s ease;
+}
+
+.deck-hit:active {
+  transform: translateY(3px);
+  background: rgba(0,0,0,.16);
+  box-shadow: inset 0 4px 7px #0005;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rw-knob-face,
+  .deck-hit {
+    transition: none !important;
+  }
+}
+</style>
+
+<script>
+(() => {
+  "use strict";
+
+  const clamp = value =>
+    Math.max(0, Math.min(1, value));
+
+  // Rotate the indicator through a realistic 260-degree range.
+  function rotateKnob(element, value) {
+    const angle = -130 + clamp(value) * 260;
+    element.style.setProperty("--rw-angle", angle + "deg");
+  }
+
+  function addKnobFace(element) {
+    const face = document.createElement("span");
+    face.className = "rw-knob-face";
+    face.setAttribute("aria-hidden", "true");
+    element.appendChild(face);
+  }
+
+  // Mouse, touch, and scroll-wheel knob interaction.
+  function enableRotation(element, getValue, setValue) {
+    let drag = null;
+
+    element.addEventListener("pointerdown", event => {
+      if (event.pointerType === "mouse" && event.button !== 0) {
+        return;
+      }
+
+      event.preventDefault();
+
+      drag = {
+        id: event.pointerId,
+        x: event.clientX,
+        y: event.clientY,
+        start: getValue(),
+        moved: false
+      };
+
+      element.setPointerCapture(event.pointerId);
+      element.classList.add("rw-dragging");
+    });
+
+    element.addEventListener("pointermove", event => {
+      if (!drag || event.pointerId !== drag.id) return;
+
+      const vertical = drag.y - event.clientY;
+      const horizontal = (event.clientX - drag.x) * 0.45;
+      const change = (vertical + horizontal) / 150;
+
+      if (Math.abs(change) > 0.005) {
+        drag.moved = true;
+        setValue(clamp(drag.start + change));
+      }
+    });
+
+    element.addEventListener("pointerup", event => {
+      if (!drag || event.pointerId !== drag.id) return;
+
+      // A simple click also nudges the control.
+      if (!drag.moved) {
+        setValue(clamp(getValue() + 0.05));
+      }
+
+      drag = null;
+      element.classList.remove("rw-dragging");
+    });
+
+    element.addEventListener("pointercancel", () => {
+      drag = null;
+      element.classList.remove("rw-dragging");
+    });
+
+    element.addEventListener("wheel", event => {
+      event.preventDefault();
+
+      const direction = event.deltaY < 0 ? 0.04 : -0.04;
+      setValue(clamp(getValue() + direction));
+    }, { passive: false });
+  }
+
+  // 1. REAL ROTATING VOLUME KNOB
+  const volumeButton = document.getElementById("volumeBtn");
+  const audio = document.getElementById("audioPlayer");
+
+  if (volumeButton && audio) {
+    volumeButton.classList.add("rw-3d-volume");
+    addKnobFace(volumeButton);
+
+    volumeButton.setAttribute("role", "slider");
+    volumeButton.setAttribute("aria-label", "Volume");
+    volumeButton.setAttribute("aria-valuemin", "0");
+    volumeButton.setAttribute("aria-valuemax", "100");
+
+    function getVolume() {
+      return audio.volume;
+    }
+
+    function setVolume(value) {
+      audio.volume = clamp(value);
+
+      if (audio.muted && value > 0) {
+        audio.muted = false;
+      }
+
+      updateVolume();
+      document.dispatchEvent(new CustomEvent(
+        "rewind:volume",
+        { detail: { value: audio.volume } }
+      ));
+    }
+
+    function updateVolume() {
+      rotateKnob(volumeButton, audio.volume);
+
+      const percent = Math.round(audio.volume * 100);
+      volumeButton.setAttribute("aria-valuenow", percent);
+      volumeButton.title = "Volume: " + percent + "%";
+    }
+
+    // Block the previous click-to-increase-volume handler.
+    volumeButton.addEventListener("click", event => {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }, true);
+
+    enableRotation(volumeButton, getVolume, setVolume);
+
+    volumeButton.addEventListener("keydown", event => {
+      let change = 0;
+
+      if (event.key === "ArrowUp" ||
+          event.key === "ArrowRight") change = 0.05;
+
+      if (event.key === "ArrowDown" ||
+          event.key === "ArrowLeft") change = -0.05;
+
+      if (event.key === "Home") {
+        event.preventDefault();
+        setVolume(0);
+        return;
+      }
+
+      if (event.key === "End") {
+        event.preventDefault();
+        setVolume(1);
+        return;
+      }
+
+      if (change !== 0) {
+        event.preventDefault();
+        setVolume(clamp(getVolume() + change));
+      }
+    });
+
+    audio.addEventListener("volumechange", updateVolume);
+    updateVolume();
+  }
+
+  // 2. ROTATING SETTINGS KNOBS
+  // Uses the existing range controls generated by js/app.js.
+  const settingsPanel = document.getElementById("settingsVisual");
+
+  if (settingsPanel) {
+    const sliders = settingsPanel.querySelectorAll(
+      "input.settings-hotspot[type='range']"
+    );
+
+    sliders.forEach((slider, index) => {
+      // Find the exact center of the existing invisible control.
+      const left = parseFloat(slider.style.left);
+      const top = parseFloat(slider.style.top);
+      const width = parseFloat(slider.style.width);
+      const height = parseFloat(slider.style.height);
+
+      if (![left, top, width, height].every(Number.isFinite)) {
+        return;
+      }
+
+      const knob = document.createElement("div");
+      knob.className = "rw-3d-setting";
+
+      knob.style.left = (left + width / 2) + "%";
+      knob.style.top = (top + height / 2) + "%";
+
+      // Larger knobs across the upper row, smaller ones below.
+      knob.style.width = index < 3 ? "6.6%" : "4.8%";
+      knob.setAttribute("aria-hidden", "true");
+
+      addKnobFace(knob);
+      settingsPanel.appendChild(knob);
+
+      function getValue() {
+        return Number(slider.value);
+      }
+
+      function setValue(value) {
+        slider.value = String(clamp(value));
+
+        // Trigger the existing real audio-effects handler.
+        slider.dispatchEvent(new Event("input", {
+          bubbles: true
+        }));
+      }
+
+      function updateKnob() {
+        const value = getValue();
+        rotateKnob(knob, value);
+
+        knob.title =
+          slider.getAttribute("aria-label") +
+          ": " + Math.round(value * 100) + "%";
+      }
+
+      slider.addEventListener("input", updateKnob);
+
+      slider.addEventListener("focus", () => {
+        knob.classList.add("rw-focused");
+      });
+
+      slider.addEventListener("blur", () => {
+        knob.classList.remove("rw-focused");
+      });
+
+      knob.addEventListener("pointerdown", () => {
+        slider.focus({ preventScroll: true });
+      });
+
+      enableRotation(knob, getValue, setValue);
+      updateKnob();
+    });
+  }
+})();
+</script>
+
 </body>
 </html>
