@@ -15,6 +15,7 @@
   let library=[...demo],queue=demo.slice(0,4).map(x=>x.id),activeId='demo-1',windowIndex=1,playing=false,volume=.7,toastTimeout;
   let playRequest=0,wantsPlayback=false;
   const resumePositions=new Map();
+  const tapePalettes=[['#e7a58f','#c66f65','#8c4545'],['#a9cbc4','#61948e','#365f5d'],['#e3c16f','#b98a3f','#73542f'],['#c1a8c8','#866b91','#51425f'],['#bdcbae','#7f9b77','#4b654d'],['#e2b1bf','#bc7188','#78455e'],['#b5c8df','#718eae','#425b7c'],['#e3a46f','#bd6947','#753d35']];
   const audio=$('audioPlayer');audio.volume=volume;
   const effects=window.REWINDEffects.createRetroAudio(audio);
   function item(id){return library.find(t=>t.id===id)}
@@ -25,24 +26,35 @@
   document.querySelectorAll('.navtab').forEach((b,i)=>b.onclick=()=>navigate(i));
   $('gearBtn').onclick=()=>navigate(0);$('aboutBtn').onclick=()=>toast('RE-WIND — Music Lives On · Local cassette player with tape effects');
   document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('modalScrim').hidden)closeModal();hideMenu();return}if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)||!$('modalScrim').hidden)return;if(e.key==='ArrowLeft'){e.preventDefault();navigate(windowIndex-1)}if(e.key==='ArrowRight'){e.preventDefault();navigate(windowIndex+1)}});
+  let draggedQueueId=null;
+  function clearTapeDrag(){draggedQueueId=null;$('cassetteDevice').classList.remove('drop-ready','drag-over');document.querySelectorAll('.dragging').forEach(element=>element.classList.remove('dragging'))}
+  function makeTapeDraggable(element,track){element.draggable=true;element.dataset.queueId=track.id;element.addEventListener('dragstart',event=>{draggedQueueId=track.id;element.classList.add('dragging');$('cassetteDevice').classList.add('drop-ready');if(event.dataTransfer){event.dataTransfer.effectAllowed='copy';event.dataTransfer.setData('application/x-rewind-tape',track.id);event.dataTransfer.setData('text/plain',track.id)}toast('Drop '+track.title+' into the cassette deck')});element.addEventListener('dragend',clearTapeDrag)}
+  const cassetteDevice=$('cassetteDevice');
+  cassetteDevice.addEventListener('dragenter',event=>{if(draggedQueueId){event.preventDefault();cassetteDevice.classList.add('drag-over')}});
+  cassetteDevice.addEventListener('dragover',event=>{if(draggedQueueId){event.preventDefault();if(event.dataTransfer)event.dataTransfer.dropEffect='copy';cassetteDevice.classList.add('drag-over')}});
+  cassetteDevice.addEventListener('dragleave',event=>{if(!cassetteDevice.contains(event.relatedTarget))cassetteDevice.classList.remove('drag-over')});
+  cassetteDevice.addEventListener('drop',event=>{event.preventDefault();const id=(event.dataTransfer&&(event.dataTransfer.getData('application/x-rewind-tape')||event.dataTransfer.getData('text/plain')))||draggedQueueId;clearTapeDrag();if(!id||!queue.includes(id))return;const track=item(id);loadTrack(id);navigate(1);toast((track?.title||'Tape')+' inserted — press Play');emit('tape-insert',{track})});
   function renderQueue(){
     const available=queue.map(id=>item(id)).filter(Boolean);
     $('queueCount').textContent=pad(available.length)+' TRACKS';
     const stack=$('cassetteStack'),lines=$('queueItems');stack.replaceChildren();lines.replaceChildren();
     if(!available.length){const empty=document.createElement('p');empty.className='queue-empty';empty.textContent='Add songs from your Library';stack.append(empty);return}
-    available.slice(0,4).forEach(track=>{
-      const tape=document.createElement('div');tape.className='cassette-case';tape.title=track.title;
+    available.forEach((track,tapeIndex)=>{
+      const tape=document.createElement('button');tape.type='button';tape.className='cassette-case';tape.title='Drag '+track.title+' into the deck or click to insert';tape.setAttribute('aria-label','Insert '+track.title+' cassette');
+      const palette=tapePalettes[(Number.isFinite(track.created)?Math.abs(track.created):tapeIndex)%tapePalettes.length];tape.style.setProperty('--shell-light',palette[0]);tape.style.setProperty('--shell-mid',palette[1]);tape.style.setProperty('--shell-dark',palette[2]);
       const art=document.createElement('div');art.className='spine-image';art.style.backgroundImage=`url(${JSON.stringify(track.cover)})`;
       const title=document.createElement('strong');title.textContent=track.title;
       const label=document.createElement('small');label.textContent='TAPE';
-      tape.append(art,title,label);stack.append(tape);
+      const mechanism=document.createElement('span');mechanism.className='tape-mechanism';mechanism.setAttribute('aria-hidden','true');
+      const leftReel=document.createElement('i');leftReel.className='tape-reel';const window=document.createElement('i');window.className='tape-window';const rightReel=document.createElement('i');rightReel.className='tape-reel';mechanism.append(leftReel,window,rightReel);
+      tape.append(art,title,label,mechanism);tape.onclick=()=>loadTrack(track.id);makeTapeDraggable(tape,track);stack.append(tape);
     });
     available.forEach((track,i)=>{
-      const row=document.createElement('button');row.type='button';row.className='queue-item'+(track.id===activeId?' active':'');row.title='Load '+track.title;row.setAttribute('aria-current',track.id===activeId?'true':'false');
+      const row=document.createElement('button');row.type='button';row.className='queue-item'+(track.id===activeId?' active':'');row.title='Drag '+track.title+' into the deck or click to load';row.setAttribute('aria-current',track.id===activeId?'true':'false');
       const n=document.createElement('span');n.className='number';n.textContent=pad(i+1);
       const t=document.createElement('span');t.className='title';t.textContent=track.title;
       const r=document.createElement('span');r.className='tape-label';r.textContent='TAPE';
-      row.append(n,t,r);row.onclick=()=>{if(track.id===activeId){wantsPlayback?pause():play()}else loadTrack(track.id)};lines.append(row);
+      row.append(n,t,r);row.onclick=()=>{if(track.id===activeId){wantsPlayback?pause():play()}else loadTrack(track.id)};makeTapeDraggable(row,track);lines.append(row);
     });
   }
   function renderLibrary(){
