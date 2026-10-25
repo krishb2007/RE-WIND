@@ -298,6 +298,14 @@ html[data-theme="dark"] .settings-visual > img{
   border-radius:13px;
 }
 
+
+/* A single imported cassette can now contain several tracks. */
+.tape-name-field{display:flex;flex-direction:column;gap:8px;margin:-6px 0 20px}
+.tape-name-field label{margin:0}
+.tape-name-field input{height:42px;padding:9px 12px;border-radius:8px;border:1px solid #dadce1;background:#fff;color:#24252a;width:100%}
+.tape-name-field small{font-size:11px;color:#8d9199}
+html[data-theme="dark"] .tape-name-field input{background:#303138;color:#f1ece7;border-color:#50515b}
+html[data-theme="dark"] .tape-name-field small{color:#bcb6bd}
 </style>
 </head>
 <body>
@@ -366,6 +374,7 @@ html[data-theme="dark"] .settings-visual > img{
 <div class="modal-scrim" id="modalScrim" hidden>
   <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalHeading">
     <div class="modal-title"><h2 id="modalHeading">Import Music</h2><button class="modal-close" id="modalClose" aria-label="Close import dialog">×</button></div>
+    <div class="tape-name-field"><label for="tapeTitle" class="form-heading">Tape / album name</label><input id="tapeTitle" type="text" maxlength="110" placeholder="e.g. My Mixtape" autocomplete="off"><small>All selected songs will appear together on one cassette.</small></div>
     <h3 class="form-heading">Upload Cover Art</h3>
     <div class="upload-box"><div class="cover-preview" id="coverPreview" aria-label="Cover art preview">▧</div><div class="upload-info"><button class="btn" id="chooseCover" type="button">▧ &nbsp; Choose Cover Image</button><small>JPG, PNG, GIF, WebP (square recommended)</small></div></div>
     <input type="file" id="coverFile" accept="image/*" hidden>
